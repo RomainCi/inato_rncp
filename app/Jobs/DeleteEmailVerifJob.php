@@ -3,30 +3,25 @@
 namespace App\Jobs;
 
 use Illuminate\Bus\Queueable;
-use App\Mail\VerificationEmailMail;
-use Illuminate\Support\Facades\Mail;
+use App\Models\UserVerification;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 
-class VerificationEmailJob implements ShouldQueue
+class DeleteEmailVerifJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    protected $email = "";
-    protected $token = "";
-    protected $nom = "";
+    protected $id = "";
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($email, $token, $nom)
+    public function __construct($id)
     {
-        $this->email = $email;
-        $this->token = $token;
-        $this->nom = $nom;
+        $this->id = $id;
     }
 
     /**
@@ -36,7 +31,7 @@ class VerificationEmailJob implements ShouldQueue
      */
     public function handle()
     {
-
-        Mail::to($this->email)->send(new VerificationEmailMail($this->token, $this->nom));
+        UserVerification::findOrFail($this->id)
+            ->delete();
     }
 }

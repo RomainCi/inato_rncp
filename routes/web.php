@@ -1,6 +1,10 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProjetController;
+use App\Http\Controllers\ConnexionController;
+use App\Http\Controllers\InscriptionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,4 +19,19 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
+})->name('/welcome');
+
+
+
+Route::get('/inscription/{token}', [InscriptionController::class, 'verification']);
+
+
+
+Route::get('/{vue_capture?}', function () {
+    return view('welcome');
 });
+
+
+// Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

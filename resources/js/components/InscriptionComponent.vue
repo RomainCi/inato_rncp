@@ -64,10 +64,13 @@
       <p @click="connexion">Connexion</p>
     </form>
     <div v-if="show == 'a'">
-      <p>Oki</p>
+      <p>
+        Vous avez 5 min pour valider votre inscription depuis votre boite mail
+        vérifier votre boite spam
+      </p>
     </div>
     <div v-if="show == 'b'">
-      <p>pas oki</p>
+      <p>Cette email est déja utulisé</p>
     </div>
   </div>
 </template>
@@ -75,6 +78,7 @@
 <script>
 import useVuelidate from "@vuelidate/core";
 import { required, email, sameAs, helpers } from "@vuelidate/validators";
+import axios from "axios";
 const InscriptionComponent = {
   props: {
     titre: String,
@@ -137,16 +141,9 @@ const InscriptionComponent = {
         : console.log("false");
     },
     async envoieInscription() {
-      const promise = await fetch("http://127.0.0.1:8000/api/inscription", {
-        method: "POST",
-        body: JSON.stringify(this.user),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const promise = await axios.post("api/users", this.user);
       console.log(promise);
-      let res = await promise.json();
-      console.log(res);
+
       if (promise.status === 200) {
         this.show = "a";
       } else {

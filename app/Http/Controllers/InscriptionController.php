@@ -6,40 +6,49 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\UserVerification;
+use App\Jobs\DeleteEmailVerifJob;
+use Illuminate\Http\JsonResponse;
 use App\Jobs\VerificationEmailJob;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
 
 class InscriptionController extends Controller
 {
-    public function store(Request $request)
+    public function verification($token)
     {
-        try {
-            $request->validate([
-                "email" => 'required|email',
-                "password" => ['required', 'confirmed', Password::min(8)->numbers()->mixedCase()->symbols()],
-                "nom" => 'string|required',
-                "prenom" => 'string|required',
-                "password_confirmation" => 'required'
-            ]);
 
-            $userVerif = UserVerification::create([
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'nom' => $request->nom,
-                'prenom' => $request->prenom,
-                'token' => Str::random(35)
-            ]);
-            dispatch(new VerificationEmailJob($userVerif['email'], $userVerif['token'], $userVerif['nom']))->delay(now()->addSeconds(3));
-            return response()->json([
-                "message" => "Vous avez 5 min pour vérifier votre email",
-            ]);
+        try {
+            $userCompte = auth()->user();
+            if ($userCompte == null) {
+                $user = UserVerification::where('token', $token)->first();
+                User::create([
+                    'email' => $user['email'],
+                    'password' => $user['password'],
+                    'nom' => $user['nom'],
+                    'prenom' => $user['prenom'],
+                ]);
+                UserVerification::findOrFail($user['id'])
+                    ->delete();
+                return redirect()->route('/welcome');
+            } else {
+                $user = UserVerification::where('token', $token)->first();
+
+                User::where("id", $userCompte->id)
+                    ->update([
+                        "nom" => $user->nom,
+                        "prenom" => $user->prenom,
+                        "password" => $userCompte->password,
+                        "email" => $user->email
+                    ]);
+                UserVerification::findOrFail($user['id'])
+                    ->delete();
+                Cookie::queue(Cookie::forget('laravel_session'));
+                return redirect()->route('/welcome');
+            }
         } catch (\Exception $e) {
-            return response()->json([
-                "message" => "erreur lors de l'inscritpion",
-                "erreur" => $e,
-            ], 400);
+            dd($e);
         }
     }
 }

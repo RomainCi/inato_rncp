@@ -10,8 +10,9 @@
       <connexion titre="connexion" :inscription="show" v-show="visible" />
       <inscription titre="inscription" :connexion="show" v-show="!visible" />
     </div>
+
     <div>
-      <router-link to="/page">page</router-link>
+      <router-link to="/projet">projet</router-link>
     </div>
   </section>
 </template>

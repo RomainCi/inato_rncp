@@ -10,8 +10,8 @@ use Illuminate\Queue\SerializesModels;
 class VerificationEmailMail extends Mailable
 {
     use Queueable, SerializesModels;
-    protected $nom = "";
     protected $token = "";
+    protected $nom = "";
 
     /**
      * Create a new message instance.
@@ -19,10 +19,10 @@ class VerificationEmailMail extends Mailable
      * @return void
      * 
      */
-    public function __construct($nom, $token)
+    public function __construct($token, $nom)
     {
-        $this->nom = $nom;
         $this->token = $token;
+        $this->nom = $nom;
     }
 
     /**
@@ -32,12 +32,13 @@ class VerificationEmailMail extends Mailable
      */
     public function build()
     {
+
         return $this->from('no-reply@inato.fr')
             ->subject('VERIFICATION EMAIL')
             ->view('email.verificationInscription')
             ->with([
                 'nom' => $this->nom,
-                'token' => $this->token
+                'token' => $this->token,
             ]);
     }
 }

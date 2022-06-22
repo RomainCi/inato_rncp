@@ -11,15 +11,11 @@
 			</div> -->
 
       <label for="password">Password</label>
-      <input
-        type="password"
-        v-model="user.password"
-        @blur="v$.user.password.$touch"
-      />
+      <input type="text" v-model="user.password" />
       <!-- <div class="error" v-if="this.v$.$invalid">Field is required</div> -->
-      <div class="error" v-if="this.v$.user.password.$error">
+      <!-- <div class="error" v-if="this.v$.user.password.$error">
         mot de passe trop court
-      </div>
+      </div> -->
 
       <button>Valider</button>
     </form>
@@ -31,6 +27,7 @@
 <script>
 import useVuelidate from "@vuelidate/core";
 import { minLength, required, email } from "@vuelidate/validators";
+import axios from "axios";
 const ConnexionComponent = {
   props: {
     titre: String,
@@ -49,7 +46,7 @@ const ConnexionComponent = {
     return {
       user: {
         email: { required, email },
-        password: { required, minLength: minLength(6) },
+        password: { required, minLength: minLength(8) },
       },
     };
   },
@@ -58,9 +55,13 @@ const ConnexionComponent = {
   },
   methods: {
     submitForm() {
-      console.log(!this.v$.user.password.$invalid);
-      console.log(this.v$.user.password.$required);
-      console.log(!this.v$.$invalid);
+      this.v$.$touch();
+      !this.v$.user.email.$error ? this.connexion() : console.log("erreur");
+    },
+    async connexion() {
+      const csrf = await axios.get("sanctum/csrf-cookie");
+      console.log("csrf", csrf);
+      await axios.post("api/login", this.user);
     },
   },
 };

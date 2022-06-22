@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\ConnexionController;
 use App\Http\Controllers\InscriptionController;
+use App\Http\Controllers\ProjetController;
+use App\Http\Controllers\UserApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,8 +18,19 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+
+Route::post('/users', [UserApiController::class, 'store']);
+
+Route::post('/login', [ConnexionController::class, 'authentification']);
+
+
+Route::group(['prefix' => 'projet', 'middleware' => ['auth:sanctum']], function () {
+    Route::get('', [ProjetController::class, 'index']);
+    Route::post('', [ProjetController::class, 'store']);
 });
 
-Route::post('/inscription', [InscriptionController::class, 'store']);
+Route::group(['prefix' => 'users', 'middleware' => ['auth:sanctum']], function () {
+    Route::get('', [UserApiController::class, 'index']);
+    Route::put('', [UserApiController::class, 'update']);
+    Route::put('/password', [UserApiController::class, 'updatePassword']);
+});

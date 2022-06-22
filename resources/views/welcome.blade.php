@@ -18,8 +18,10 @@
     </head>
     <body class="antialiased">
        <div id="app">
-        
+           
        </div>
-       <script src="{{asset('js/app.js')}}"></script>
+       
+       <script src="{{mix('js/app.js')}}"></script>
+       <script src="https://kit.fontawesome.com/40f157f11e.js" crossorigin="anonymous"></script>
     </body>
 </html>
