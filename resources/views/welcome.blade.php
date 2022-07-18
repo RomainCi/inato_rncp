@@ -20,7 +20,7 @@
        <div id="app">
            
        </div>
-       
+       <script src="//http://localhost:6001/socket.io/socket.io.js"></script>
        <script src="{{mix('js/app.js')}}"></script>
        <script src="https://kit.fontawesome.com/40f157f11e.js" crossorigin="anonymous"></script>
     </body>

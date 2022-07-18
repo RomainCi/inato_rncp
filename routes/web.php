@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjetController;
+use App\Http\Controllers\UserApiController;
 use App\Http\Controllers\ConnexionController;
 use App\Http\Controllers\InscriptionController;
 

@@ -1,90 +1,222 @@
 <template>
-  <div>
-    <h2>Création de projet</h2>
+  <div class="tutu">
+    <!-- modale close verifie la height -->
 
-    <p @click="showModale = true">Création d'un projet</p>
+    <div
+      class="modale-overlay"
+      v-show="showModaleBis"
+      @click="modaleProjet"
+    ></div>
+    <div
+      class="modal-overlay"
+      v-show="modaleUser"
+      @click="modaleUser = false"
+    ></div>
 
     <div
       class="modal-overlay"
-      v-show="showModale"
-      @click="showModale = false"
+      v-show="modaleInvit"
+      @click="modaleInvit = false"
     ></div>
+    <!-- <div class="close" @click="modaleInvit = false">&#x2715;</div> -->
 
-    <transition name="slide" appear>
-      <div class="modal" v-show="showModale">
-        <div class="close" @click="showModale = false">&#x2715;</div>
-        <form class="formulaire" @submit.prevent="submitForm">
-          <label for="projet">titre</label>
-          <input type="text" v-model="titre" />
+    <!-- modale close -->
 
-          <label for="image">Votre fond écran</label>
-          <input type="file" @change="file" accept="image/*" />
-          <div>
-            <ul>
-              <li class="back"></li>
-              <li class="back2"></li>
-            </ul>
-          </div>
-          <button>valider</button>
-        </form>
-      </div>
-    </transition>
+    <CreationProjet :datasPublicUrl="response.publicUrl"></CreationProjet>
+
     <h2>Mes projets</h2>
-    <div v-for="(element, index) in response" :key="index">
-      <p>{{ element.nom }}</p>
+    <div class="bigAllContainer">
+      <div v-if="modaleInvit" class="modal">
+        <InvitationProjet :idProjet="idProjet"></InvitationProjet>
+      </div>
+
+      <div v-if="modaleUser" class="modal">
+        <GestionUser
+          :projetId="idProjet"
+          :indexProjet="saveIndex"
+          :active="active"
+        ></GestionUser>
+      </div>
+
+      <div
+        class="bigContainer"
+        v-for="(element, index) in response.projet"
+        :key="index"
+      >
+        <div class="container">
+          <i class="fa-solid fa-ellipsis-vertical" @click="showOption(index)">
+            <div
+              :style="{
+                'background-image': `url(${element.urlprivate})`,
+              }"
+              class="backgroundProjet"
+            ></div>
+          </i>
+          <p>{{ element.titre }}{{ index }}<br />{{ element.role }}</p>
+        </div>
+
+        <div
+          v-if="element.role != 'admin'"
+          class="modalBis"
+          v-show="popup[index]"
+        >
+          <p>Vous n'avez pas les acces</p>
+        </div>
+
+        <div
+          v-if="element.role == 'admin'"
+          class="modalBis"
+          v-show="popup[index]"
+        >
+          <ul>
+            <li @click="deleteProjet(element.id)">supprimer</li>
+            <li @click="modaleInvitation(element.id, index)">inviter</li>
+            <li @click="modaleGestionUser(element.id, index)">
+              gerer {{ element.id }}
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import axios from "axios";
-import imageFond from "../assets/image.jpg";
+import GestionUserComponent from "./ModaleProjet/GestionUserComponent.vue";
+import CreationProjetComponent from "./ModaleProjet/CreationProjetComponent.vue";
+import InvitationProjetComponent from "./ModaleProjet/InvitationProjetComponent.vue";
 const ProjetComponent = {
-  props: {
-    datas: Object,
+  components: {
+    GestionUser: GestionUserComponent,
+    CreationProjet: CreationProjetComponent,
+    InvitationProjet: InvitationProjetComponent,
   },
+  props: {},
   data() {
     return {
-      cssProps: {
-        backgroundImage: `url(${require("../assets/image.jpg")})`,
-      },
-      titre: "",
-      imageFond: imageFond,
       response: "",
-      showModale: false,
-      image: null,
+      popup: [""],
+      showModaleBis: false,
+      saveIndex: "",
+      modaleInvit: false,
+      modaleUser: false,
+      invitation: {
+        email: "",
+        id: "",
+      },
+      idProjet: "",
+      redisIdprojet: null,
+      active: false,
     };
   },
   beforeMount() {
     this.dataProjet();
   },
+  mounted() {},
+
   methods: {
     ////requete/////////////
-    async dataProjet() {
-      //   const csrf = await axios.get("sanctum/csrf-cookie");
-      //   console.log("csrf", csrf);
-      const res = await axios.get("api/projet");
-      this.response = res.data.projet;
-    },
-    async submitForm() {
-      let fd = new FormData();
-      if (this.image != null) {
-        fd.append("image", this.image);
+    async requeteTempsReel() {
+      const res = await axios.get(`api/projet/${this.redisIdprojet}`);
+      console.log(res, "la response de requete redis");
+      if (res.data.projet === 0) {
+        console.log(this.response, "varaiable response");
+        let index = this.response.projet.findIndex(
+          (element) => element.id === this.redisIdprojet
+        );
+        this.response.projet.splice(index, 1);
+      } else {
+        let projet = this.response.projet.find(
+          (element) => element.id === this.redisIdprojet
+        );
+        projet.role = res.data.projet.role;
       }
-
-      fd.append("titre", this.titre);
-      await axios.get("sanctum/csrf-cookie");
-      const res = await axios.post("api/projet", fd);
-
+      if (this.idProjet === this.redisIdprojet) {
+        this.active = !this.active;
+      }
+      // this.response = res.data;
+      // this.response.projet.some((e) => e.id === this.redisIdprojet)
+      //   ? true
+      //   : window.Echo.leave(`projet${this.redisIdprojet}`);
+      // if (this.response.adminProjet == 0) {
+      //   return (this.modaleUser = false);
+      // } else {
+      //   this.response.adminProjet.some((e) => e.projet_id === this.idProjet)
+      //     ? true
+      //     : (this.modaleUser = false);
+      // }
+    },
+    async dataProjet() {
+      const res = await axios.get("api/projet");
       this.response = res.data;
-      console.log(this.response);
+      console.log("testo", this.response);
+
+      this.joinChannel();
+    },
+
+    async invitForm() {
+      console.log(this.invitation.id, "id");
+      console.log(this.invitation.email, "email invit");
+      const res = await axios.post("api/invitation", this.invitation);
+      console.log(res, "inviation");
+    },
+    async deleteProjet(id) {
+      const res = await axios.delete(`api/projet/${id}`);
+      console.log(res);
+      if (res.status === 200) {
+        this.dataProjet();
+        this.modaleProjet();
+        window.Echo.leave(`projet${id}`);
+      }
     },
     //////////fin requete//////////
-    toto() {
-      console.log(this.image);
+    joinChannel() {
+      this.response.projet.forEach((element) => {
+        console.log(element.id);
+        window.demo = window.Echo.join(`projet${element.id}`)
+          .here((users) => {
+            console.log("users", users);
+          })
+          .joining((user) => {
+            console.log(user, "join");
+          })
+          .leaving((user) => {
+            console.log(user, "leave");
+          })
+          .listen(".role-projet", (event) => {
+            console.log("event dazdzad", event);
+            console.log(this.response, "la reponse");
+            this.redisIdprojet = event.message;
+            console.log(this.redisIdprojet, "idprojet redis");
+            this.requeteTempsReel();
+          })
+          .listenForWhisper("test", (e) => {
+            console.log("chuto", e);
+          });
+      });
     },
-    file(e) {
-      this.image = e.target.files[0];
+
+    showOption(index) {
+      console.log(index, "hey");
+      this.popup[index] = true;
+      this.saveIndex = index;
+      this.showModaleBis = true;
+    },
+    modaleProjet() {
+      this.popup[this.saveIndex] = false;
+      this.showModaleBis = false;
+    },
+    modaleInvitation(id, index) {
+      this.idProjet = id;
+      this.modaleInvit = true;
+      this.popup[index] = false;
+    },
+    modaleGestionUser(id, index) {
+      console.log(id);
+      this.idProjet = id;
+      this.modaleUser = true;
+      this.popup[index] = false;
     },
   },
 };
@@ -92,17 +224,43 @@ export default ProjetComponent;
 </script>
 
 <style lang="scss" scoped>
+.bigAllContainer {
+  display: flex;
+}
+.bigContainer {
+  // position: relative;
+  display: flex;
+  flex-direction: row;
+}
+.container {
+  position: relative;
+  display: flex;
+  height: 120px;
+  width: 120px;
+
+  margin: 5px;
+
+  overflow: hidden;
+}
+.backgroundProjet {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 120px;
+  height: 120px;
+
+  z-index: -1;
+  opacity: 0.5;
+  content: "";
+  background-size: cover;
+}
+
 .back {
   height: 60px;
   width: 60px;
   background-size: cover;
 }
-.back2 {
-  background-image: url("../assets/image2.jpg");
-  height: 60px;
-  width: 60px;
-  background-size: cover;
-}
+
 .formulaire {
   display: flex;
   flex-direction: column;
@@ -133,6 +291,15 @@ export default ProjetComponent;
   bottom: 0;
   z-index: 98;
   background-color: rgba(0, 0, 0, 0.3);
+  height: 100%;
+}
+.modale-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 98;
 }
 
 .modal {
@@ -149,20 +316,20 @@ export default ProjetComponent;
 
   padding: 25px;
 }
-
-// .fade-enter-active,
-// .fade-leave-active {
-//   transition: opacity 0.5s;
-// }
-
-// .fade-enter,
-// .fade-leave-to {
-//   opacity: 0;
-// }
-
-.slide-enter,
-.slide-leave-to {
-  transform: translateY(-50%) translateX(100vw);
+li {
+  list-style: none;
+}
+ul {
+  padding: 0px;
+}
+.modalBis {
+  // position: relative;
+  top: 0%;
+  left: 0%;
+  // transform: translate(-50%, -50%);
+  z-index: 99;
+  margin: 0px;
+  background-color: red;
 }
 </style>
 

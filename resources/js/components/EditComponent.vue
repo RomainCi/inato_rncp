@@ -154,6 +154,8 @@ const EditComponent = {
       this.securite.password_confirmation = "";
     },
     async profil() {
+      const csrf = await axios.get("sanctum/csrf-cookie");
+      console.log(csrf);
       const res = await axios.get("api/users");
       this.user.nom = res.data.nom;
       this.user.prenom = res.data.prenom;

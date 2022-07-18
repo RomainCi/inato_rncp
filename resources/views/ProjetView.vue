@@ -2,12 +2,11 @@
   <div>
     <navbar></navbar>
     <h1>Projet</h1>
-    <projet :datas="response"></projet>
+    <projet></projet>
   </div>
 </template>
 
 <script>
-import axios from "axios";
 import NavbarComponent from "../js/components/NavbarComponent.vue";
 import ProjetComponent from "../js/components/ProjetComponent.vue";
 const ProjetView = {
@@ -16,22 +15,10 @@ const ProjetView = {
     navbar: NavbarComponent,
   },
   data() {
-    return {
-      response: "",
-    };
+    return {};
   },
-  methods: {
-    async projet() {
-      const csrf = await axios.get("sanctum/csrf-cookie");
-      console.log("csrf", csrf);
-      const res = await axios.get("api/projet");
-      this.response = res.data.projet;
-      console.log(this.response);
-    },
-  },
-  mounted() {
-    // this.projet();
-  },
+  methods: {},
+  mounted() {},
 };
 export default ProjetView;
 </script>
