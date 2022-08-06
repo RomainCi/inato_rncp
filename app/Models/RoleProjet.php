@@ -14,8 +14,6 @@ class RoleProjet extends Model
     {
         return  $this->hasMany(RoleProjet::class, 'projet_id', 'id')
             ->where('user_id', '!=', auth()->user()->id);
-        // ->join('users', 'users.id', '=', 'role_projets.user_id')
-        // ->select('users.nom', 'role_projets.*');
     }
 
     public function userRole()
@@ -26,5 +24,10 @@ class RoleProjet extends Model
     public function projetRole()
     {
         return $this->belongsTo(Projet::class, 'projet_id', 'id');
+    }
+
+    public function listRole()
+    {
+        return $this->belongsTo(Lists::class, 'projet_id', 'projet_id');
     }
 }

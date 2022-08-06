@@ -18,18 +18,26 @@
       v-show="modaleInvit"
       @click="modaleInvit = false"
     ></div>
+
+    <div
+      class="modal-overlay"
+      v-show="modaleDelete"
+      @click="modaleDelete = false"
+    ></div>
     <!-- <div class="close" @click="modaleInvit = false">&#x2715;</div> -->
 
     <!-- modale close -->
 
-    <CreationProjet :datasPublicUrl="response.publicUrl"></CreationProjet>
+    <CreationProjet></CreationProjet>
 
     <h2>Mes projets</h2>
     <div class="bigAllContainer">
       <div v-if="modaleInvit" class="modal">
         <InvitationProjet :idProjet="idProjet"></InvitationProjet>
       </div>
-
+      <div v-if="modaleDelete" class="modal">
+        <deleteProjet :idDelete="idDelete"></deleteProjet>
+      </div>
       <div v-if="modaleUser" class="modal">
         <GestionUser
           :projetId="idProjet"
@@ -52,7 +60,10 @@
               class="backgroundProjet"
             ></div>
           </i>
+
           <p>{{ element.titre }}{{ index }}<br />{{ element.role }}</p>
+          <br />
+          <p @click="enterProjet(element.id)">entrer</p>
         </div>
 
         <div
@@ -69,7 +80,7 @@
           v-show="popup[index]"
         >
           <ul>
-            <li @click="deleteProjet(element.id)">supprimer</li>
+            <li @click="modaleDeleteProjet(element.id, index)">supprimer</li>
             <li @click="modaleInvitation(element.id, index)">inviter</li>
             <li @click="modaleGestionUser(element.id, index)">
               gerer {{ element.id }}
@@ -86,11 +97,15 @@ import axios from "axios";
 import GestionUserComponent from "./ModaleProjet/GestionUserComponent.vue";
 import CreationProjetComponent from "./ModaleProjet/CreationProjetComponent.vue";
 import InvitationProjetComponent from "./ModaleProjet/InvitationProjetComponent.vue";
+import DeleteProjetComponent from "./ModaleProjet/DeleteProjetComponent.vue";
+import router from "../router";
+
 const ProjetComponent = {
   components: {
     GestionUser: GestionUserComponent,
     CreationProjet: CreationProjetComponent,
     InvitationProjet: InvitationProjetComponent,
+    deleteProjet: DeleteProjetComponent,
   },
   props: {},
   data() {
@@ -101,6 +116,7 @@ const ProjetComponent = {
       saveIndex: "",
       modaleInvit: false,
       modaleUser: false,
+      modaleDelete: false,
       invitation: {
         email: "",
         id: "",
@@ -108,6 +124,7 @@ const ProjetComponent = {
       idProjet: "",
       redisIdprojet: null,
       active: false,
+      idDelete: "",
     };
   },
   beforeMount() {
@@ -135,22 +152,13 @@ const ProjetComponent = {
       if (this.idProjet === this.redisIdprojet) {
         this.active = !this.active;
       }
-      // this.response = res.data;
-      // this.response.projet.some((e) => e.id === this.redisIdprojet)
-      //   ? true
-      //   : window.Echo.leave(`projet${this.redisIdprojet}`);
-      // if (this.response.adminProjet == 0) {
-      //   return (this.modaleUser = false);
-      // } else {
-      //   this.response.adminProjet.some((e) => e.projet_id === this.idProjet)
-      //     ? true
-      //     : (this.modaleUser = false);
-      // }
+      ///////rajouter le leave du serveur redis //////
     },
     async dataProjet() {
       const res = await axios.get("api/projet");
       this.response = res.data;
       console.log("testo", this.response);
+      console.log("ccoucou");
 
       this.joinChannel();
     },
@@ -161,15 +169,7 @@ const ProjetComponent = {
       const res = await axios.post("api/invitation", this.invitation);
       console.log(res, "inviation");
     },
-    async deleteProjet(id) {
-      const res = await axios.delete(`api/projet/${id}`);
-      console.log(res);
-      if (res.status === 200) {
-        this.dataProjet();
-        this.modaleProjet();
-        window.Echo.leave(`projet${id}`);
-      }
-    },
+
     //////////fin requete//////////
     joinChannel() {
       this.response.projet.forEach((element) => {
@@ -203,6 +203,11 @@ const ProjetComponent = {
       this.saveIndex = index;
       this.showModaleBis = true;
     },
+    modaleDeleteProjet(id, index) {
+      this.idDelete = id;
+      this.modaleDelete = true;
+      this.popup[index] = false;
+    },
     modaleProjet() {
       this.popup[this.saveIndex] = false;
       this.showModaleBis = false;
@@ -217,6 +222,10 @@ const ProjetComponent = {
       this.idProjet = id;
       this.modaleUser = true;
       this.popup[index] = false;
+    },
+    enterProjet(id) {
+      router.push({ name: "detailsProjet", params: { projetId: id } });
+      localStorage.setItem("idProjet", id);
     },
   },
 };

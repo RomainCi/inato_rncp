@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Broadcasting\PrivateChannel;
 use App\Models\RoleProjet;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\App;
@@ -56,6 +57,10 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(RoleProjet::class, "user_id", "id");
     }
 
+    public function editeurProjet(): HasMany
+    {
+        return $this->hasMany(RoleProjet::class, "user_id", 'id')->where('role', 'admin')->orWhere('role', 'editeur');
+    }
     public function invitation(): HasMany
     {
         return $this->hasMany(Invitation::class, 'admin_id', 'id')

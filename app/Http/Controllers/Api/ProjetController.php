@@ -26,12 +26,6 @@ class ProjetController extends Controller
                 ->with('projetRole')
                 ->where('user_id', $user->id)
                 ->get();
-            // $projetsAdmin = $projets->where('role', 'admin');
-            // $allRole = RoleProjet::with('userRole')
-            //     ->get();
-            // foreach ($projetsAdmin as $key => $value) {
-            //     $adminProjet[$key] = $allRole->where('projet_id', $value->projet_id)->where('user_id', '!=', $user->id);
-            // };
             foreach ($projets as $key => $value) {
                 if (Storage::disk('s3')->exists($value->projetRole->path)) {
                     $projet[$key] = ["urlprivate" => Storage::temporaryUrl(
@@ -40,29 +34,33 @@ class ProjetController extends Controller
                     ), "titre" => $value->projetRole->nom, "id" => $value->projetRole->id, "role" => $value->role];
                 }
             }
-            // $image = UserBackgroundImagePublique::all();
-            // foreach ($image as $key => $value) {
-            //     if (Storage::disk('s3')->exists($value->chemin)) {
-            //         $url[$key] = ["url" => Storage::temporaryUrl(
-            //             $value->chemin,
-            //             now()->addMinutes(1)
-            //         ), "id" => $value->id];
-            //     }
-            // }
+
 
 
 
             return response()->json([
                 "projet" => $projet ?? null,
-                // "adminProjet" => $adminProjet ?? 0,
             ]);
-            // return response()->json([
-            //     "message" => "succes",
-            //     "publicUrl" => $url,
-            //     "projet" => $projet ?? null,
-            //     "adminProjet" => $nomRole ?? 0,
-            //     "idUser" => $user->id,
-            // ]);
+        } catch (\Exception $e) {
+            dd($e);
+        }
+    }
+    public function indexBackgroundImage(): JsonResponse
+    {
+        try {
+            $image = UserBackgroundImagePublique::all();
+            foreach ($image as $key => $value) {
+                if (Storage::disk('s3')->exists($value->chemin)) {
+                    $url[$key] = ["url" => Storage::temporaryUrl(
+                        $value->chemin,
+                        now()->addMinutes(1)
+                    ), "id" => $value->id];
+                }
+            }
+            return response()->json([
+                "message" => "succes",
+                "public" => $url,
+            ]);
         } catch (\Exception $e) {
             dd($e);
         }

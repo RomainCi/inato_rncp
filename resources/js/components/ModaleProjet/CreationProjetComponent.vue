@@ -22,7 +22,7 @@
         <label for="image">Votre fond écran</label>
         <input type="file" @change="file" accept="image/*" />
 
-        <div v-for="(element, index) in datasPublicUrl" :key="index">
+        <div v-for="(element, index) in publicUrl" :key="index">
           <img
             class="back"
             :src="`${element.url}`"
@@ -38,17 +38,27 @@
 </template>
 
 <script>
+import axios from "axios";
+
 const CreationProjetComponent = {
-  props: {
-    datasPublicUrl: Object,
-  },
+  props: {},
   data() {
     return {
       image: null,
       showModale: false,
+      publicUrl: "",
+      titre: "",
     };
   },
+  beforeMount() {
+    this.datasPublicUrl();
+  },
   methods: {
+    async datasPublicUrl() {
+      const res = await axios.get(`api/projet/publicUrl/backgroundImage`);
+      console.log(res, "publicUrl");
+      this.publicUrl = res.data.public;
+    },
     async submitForm() {
       let fd = new FormData();
       console.log(this.image);

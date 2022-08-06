@@ -1,9 +1,19 @@
 import { createStore } from "vuex";
 
 export default createStore({
-    state: {},
+    state: {
+        nombre: "",
+    },
     getters: {},
-    mutations: {},
-    actions: {},
+    mutations: {
+        notifNbr(state, nbr) {
+            state.nombre = nbr;
+        },
+    },
+    actions: {
+        envoieNbr: ({ commit }, nbr) => {
+            commit("notifNbr", nbr);
+        },
+    },
     modules: {},
 });

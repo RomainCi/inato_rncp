@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-
+        {{-- <meta name="csrf-token" content="{{csrf_token()}}"> --}}
         <title>Laravel</title>
 
         {{-- <!-- Fonts -->
@@ -20,7 +20,9 @@
        <div id="app">
            
        </div>
-       <script src="//http://localhost:6001/socket.io/socket.io.js"></script>
+       <script>window.User={
+        id:{{optional(auth()->user())->id}}}</script>
+       {{-- <script src="//http://localhost:6001/socket.io/socket.io.js"></script> --}}
        <script src="{{mix('js/app.js')}}"></script>
        <script src="https://kit.fontawesome.com/40f157f11e.js" crossorigin="anonymous"></script>
     </body>

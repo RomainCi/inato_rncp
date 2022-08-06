@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\InvitationEvent;
 use App\Models\User;
 use App\Models\Projet;
 use App\Models\Invitation;
@@ -9,7 +10,11 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Models\RoleProjet;
+use App\Notifications\HoteNotif;
+use App\Notifications\InvitationNotif;
 use Illuminate\Support\Facades\Gate;
+use PhpParser\Node\Expr\New_;
 
 class ProjetInvitation extends Controller
 {
@@ -18,30 +23,24 @@ class ProjetInvitation extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(): JsonResponse
     {
         try {
             $user = auth()->user();
-            $invit = Invitation::select('admin_id', 'projet_id', 'status')
+            $invit = Invitation::select('admin_id', 'projet_id', 'status', 'id', 'color')
                 ->with('admins')
                 ->with('projets')
                 ->where('user_id', $user->id)
                 ->get();
-
-            // $hote = $user->adminInvitation;
-            // $test = User::with('guestInvitation')->get();
-            // $test = $user->guestInvitation->with('test');
-            // dd($test);
-            // $invite = $user->guestInvitation;
-            // dd($invite);
+            $hote = Invitation::select('user_id', 'projet_id', 'status', 'id')
+                ->with('guests')
+                ->with('projets')
+                ->where('admin_id', $user->id)
+                ->get();
             return response()->json([
                 "invite" => $invit,
+                "hote" => $hote,
             ]);
-            // return response()->json([
-            //     "hoteProjet" => $hote,
-            //     "invite" => $invite,
-            //     "message" => "succes",
-            // ]);
         } catch (\Exception $e) {
             dd($e);
         }
@@ -79,11 +78,23 @@ class ProjetInvitation extends Controller
                         "message" => "stop spam",
                     ], 409);
                 } else {
-                    Invitation::create([
+                    $invit =  Invitation::create([
                         "admin_id" => $user->id,
                         "projet_id" => $request->id,
-                        "user_id" => $guestUser->id
+                        "user_id" => $guestUser->id,
+                        "color" => "blue"
                     ]);
+
+                    $invite = Invitation::select('admin_id', 'projet_id', 'status', 'id', 'color')
+                        ->with('admins')
+                        ->with('projets')
+                        ->where('id', $invit->id)
+                        ->where('admin_id', $user->id)
+                        ->first();
+
+                    $user = User::where('id', $invit->user_id)->first();
+                    $user->notify(new InvitationNotif($invite));
+
                     return response()->json([
                         "message" => "succes"
                     ]);
@@ -112,48 +123,50 @@ class ProjetInvitation extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         try {
             $user = auth()->user();
             $request->validate([
-                "invitation" => ['required', Rule::in(['accept', 'refuse'])]
+                "invitation" => ['required', Rule::in(['accept', 'refuse'])],
+                "idInvit" => 'required|integer',
+                "adminId" => 'required|integer'
             ]);
-            if (!Gate::allows('invitation-user', $id)) {
+            ///verifier cette gate probleme ////
+            if (!Gate::allows('invitation-user', [$id, $request->idInvit, $request->adminId])) {
                 return response()->json([
                     "message" => "pas l'autorisation"
                 ], 403);
-            } else {
             }
-
             Invitation::where("projet_id", $id)
                 ->where("user_id", $user->id)
                 ->where('status', 'pending')
                 ->update([
                     "status" => $request->invitation,
                 ]);
-            // $test = Invitation::all();
-            // dd($test);
-            // $projet = Projet::findOrFail($id);
-            // $projet = Projet::all();
-            // $projet = $projet->projetI->where('user_id', $user->id);
-            // $projet->status = $request->invitation;
-            // $projet->save();
-            // dd($projet);
-            $guest = $user->guestInvitation->refresh();
-            $toto = $user->guestInvitation;
-            dd($toto);
-            // $guest->refresh();
-            // dd($guest);
-            //     ->where('projet_id', $id)
-            //     ->where('status', 'pending')
-            //     ->update([
-            //         "status" => $request->invitation,
-            //     ]);
-            // dd($guest);
+            if ($request->invitation === "accept") {
+                $role = RoleProjet::create([
+                    "projet_id" => $id,
+                    "user_id" => $user->id,
+                    "role" => "visiteur",
+                ]);
+            }
+            Broadcast(new InvitationEvent($request->idInvit, $request->invitation));
+            $users = User::where('id', $request->adminId)->first();
+
+            $invite = Invitation::select('user_id', 'projet_id', 'status', 'id', 'color')
+                ->with('guests')
+                ->with('projets')
+                ->where('projet_id', $id)
+                ->where('id', $request->idInvit)
+                ->where('user_id', $user->id)
+                ->first();
+
+            $users->notify(new HoteNotif($invite));
             return response()->json([
                 "message" => "succes",
-                // "invite" => $guest
+                "status" => $request->invitation,
+                "idProjet" => $id,
             ]);
         } catch (\Exception $e) {
             dd($e);

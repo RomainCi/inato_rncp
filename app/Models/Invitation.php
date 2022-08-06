@@ -17,15 +17,20 @@ class Invitation extends Model
         return $this->belongsTo(User::class, 'admin_id', 'id')->select('id', 'nom');
     }
 
-    public function guests(): HasMany
+    public function guests(): BelongsTo
     {
-        return $this->hasMany(User::class, 'id', 'user_id');
+        return $this->belongsTo(User::class, 'user_id', 'id')->select('id', 'nom');
     }
 
-    public function projets(): HasMany
+    public function projets(): BelongsTo
     {
-        return $this->hasMany(Projet::class, 'id', 'projet_id')->select('id', 'nom');
+        return $this->belongsTo(Projet::class, 'projet_id', 'id')->select('id', 'nom');
     }
+
+    // public function notifications():BelongsTo
+    // {
+    //     return $this->belongsTo(auth()->user())
+    // }
 
     public function verification($adminId, $guestId, $projetId)
     {

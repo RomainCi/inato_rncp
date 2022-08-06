@@ -31,7 +31,9 @@ Route::get('/inscription/{token}', [InscriptionController::class, 'verification'
 Route::get('/{vue_capture?}', function () {
     return view('welcome');
 });
-
+// Route::get('/{details/vue_capture?}', function () {
+//     return view('welcome');
+// });
 
 // Auth::routes();
 

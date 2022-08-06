@@ -3,6 +3,7 @@ import HomeView from "../../views/HomeView.vue";
 import EditView from "../../views/EditView.vue";
 import ProjetView from "../../views/ProjetView.vue";
 import NotificationView from "../../views/NotificationView.vue";
+import ListesView from "../../views/ListesView.vue";
 
 const routes = [
     {
@@ -24,6 +25,12 @@ const routes = [
         path: "/notification",
         name: "notification",
         component: NotificationView,
+    },
+    {
+        path: "/detailsProjet",
+        name: "detailsProjet",
+        component: ListesView,
+        props: true,
     },
 ];
 
