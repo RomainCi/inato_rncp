@@ -10,12 +10,12 @@
     "database": "redis",
     "databaseConfig": {
         "redis": {
-            "host": "127.0.0.1",
-            "port": "6379"
+            "host": "SG-island-crib-8260-53739.servers.mongodirector.com",
+            "port": "6379",
+            "connectTimeout": 90000,
+            "password": "NmQ39DYxBEtCGfPTt4nNGadsffSC7myU"
         },
-        "sqlite": {
-            "databasePath": "/database/laravel-echo-server.sqlite"
-        }
+        "sqlite": {}
     },
     "devMode": true,
     "host": null,

@@ -27,19 +27,18 @@ class ProjetInvitation extends Controller
     {
         try {
             $user = auth()->user();
-            $invit = Invitation::select('admin_id', 'projet_id', 'status', 'id', 'color')
-                ->with('admins')
-                ->with('projets')
-                ->where('user_id', $user->id)
-                ->get();
-            $hote = Invitation::select('user_id', 'projet_id', 'status', 'id')
-                ->with('guests')
-                ->with('projets')
-                ->where('admin_id', $user->id)
-                ->get();
+            $notif = $user->notifications()->where('notifiable_id', $user->id)->get();
+            foreach ($notif as $key => $value) {
+                $invitation[] = ["invitation" => Invitation::where('id', $value->data["invitation"][0]["id"])
+                    ->with('admins')
+                    ->with('projets')
+                    ->with('guests')
+                    ->get(), "notification" => ["notif" => $value->read_at]];
+            }
             return response()->json([
-                "invite" => $invit,
-                "hote" => $hote,
+                "invite" => $invitation ?? [],
+                "message" => "succes",
+                "id" => $user->id
             ]);
         } catch (\Exception $e) {
             dd($e);
@@ -82,17 +81,16 @@ class ProjetInvitation extends Controller
                         "admin_id" => $user->id,
                         "projet_id" => $request->id,
                         "user_id" => $guestUser->id,
-                        "color" => "blue"
                     ]);
 
-                    $invite = Invitation::select('admin_id', 'projet_id', 'status', 'id', 'color')
-                        ->with('admins')
+                    $invite = Invitation::with('admins')
                         ->with('projets')
+                        ->with('guests')
                         ->where('id', $invit->id)
                         ->where('admin_id', $user->id)
-                        ->first();
+                        ->get();
 
-                    $user = User::where('id', $invit->user_id)->first();
+                    $user = User::where('id', $invite[0]->user_id)->first();
                     $user->notify(new InvitationNotif($invite));
 
                     return response()->json([
@@ -151,22 +149,31 @@ class ProjetInvitation extends Controller
                     "role" => "visiteur",
                 ]);
             }
-            Broadcast(new InvitationEvent($request->idInvit, $request->invitation));
-            $users = User::where('id', $request->adminId)->first();
 
-            $invite = Invitation::select('user_id', 'projet_id', 'status', 'id', 'color')
-                ->with('guests')
+            Broadcast(new InvitationEvent($request->idInvit, $request->invitation));
+            $usersInvite = User::where('id', $request->adminId)->first();
+
+            $invite = Invitation::with('admins')
                 ->with('projets')
+                ->with("guests")
                 ->where('projet_id', $id)
                 ->where('id', $request->idInvit)
                 ->where('user_id', $user->id)
-                ->first();
+                ->get();
 
-            $users->notify(new HoteNotif($invite));
+            $usersInvite->notify(new HoteNotif($invite));
+            $readAt = "0";
+            foreach ($user->unreadNotifications as  $value) {
+                if ($value->data["invitation"][0]["id"] == $request->idInvit) {
+                    $value->markAsRead();
+                    $readAt = $value->read_at;
+                }
+            };
             return response()->json([
                 "message" => "succes",
                 "status" => $request->invitation,
-                "idProjet" => $id,
+                "id" => $request->idInvit,
+                "readAt" => $readAt
             ]);
         } catch (\Exception $e) {
             dd($e);
@@ -181,6 +188,39 @@ class ProjetInvitation extends Controller
      */
     public function destroy($id)
     {
-        //
+        try {
+            $user = auth()->user();
+            ///////////////////ameliorer la securite /////////////
+            $invitation = Invitation::findOrFail($id);
+            if ($invitation->user_id != $user->id) {
+                if ($invitation->admin_id != $user->id) {
+                    return response()->json([
+                        "message" => "pas acces"
+                    ], 403);
+                }
+            }
+            if ($invitation->status == "pending") {
+                $invitation->delete();
+            }
+            $readAt = "0";
+            foreach ($user->unreadNotifications as  $value) {
+                if ($value->data["invitation"][0]["id"] == $id) {
+                    $value->markAsRead();
+                    $readAt = $value->read_at;
+                }
+            };
+            foreach ($user->notifications as  $value) {
+                if ($value->data["invitation"][0]["id"] == $id) {
+                    $value->delete();
+                }
+            };
+            return response()->json([
+                "message" => "succes",
+                "id" => $id,
+                "readAt" => $readAt
+            ]);
+        } catch (\Exception $e) {
+            dd($e);
+        }
     }
 }

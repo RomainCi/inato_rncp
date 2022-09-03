@@ -28,7 +28,7 @@
 
     <!-- modale close -->
 
-    <CreationProjet></CreationProjet>
+    <CreationProjet v-on:ajoutProjet="ajoutProjet($event)"></CreationProjet>
 
     <h2>Mes projets</h2>
     <div class="bigAllContainer">
@@ -157,7 +157,7 @@ const ProjetComponent = {
     async dataProjet() {
       const res = await axios.get("api/projet");
       this.response = res.data;
-      console.log("testo", this.response);
+      console.log("projet", this.response);
       console.log("ccoucou");
 
       this.joinChannel();
@@ -173,6 +173,7 @@ const ProjetComponent = {
     //////////fin requete//////////
     joinChannel() {
       this.response.projet.forEach((element) => {
+        console.log("je rentre dans le channel projet");
         console.log(element.id);
         window.demo = window.Echo.join(`projet${element.id}`)
           .here((users) => {
@@ -196,7 +197,12 @@ const ProjetComponent = {
           });
       });
     },
-
+    ajoutProjet(event) {
+      console.log(event);
+      console.log(this.response.projet);
+      this.response.projet.push(event);
+      this.joinChannel();
+    },
     showOption(index) {
       console.log(index, "hey");
       this.popup[index] = true;

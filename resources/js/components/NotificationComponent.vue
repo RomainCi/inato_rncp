@@ -1,12 +1,42 @@
 <template>
-  <div class="bigContainer">
+  <div v-for="(element, index) in response" :key="index">
+    <div class="condition" v-if="typeof element.notification.notif == 'string'">
+      {{ (hote = "lu") && (invite = "lu") }}
+    </div>
+    <div class="condition" v-else>
+      {{ (hote = "nonLu") && (invite = "nonLu") }}
+    </div>
+    <div v-for="(e, i) in element.invitation" :key="i">
+      <div v-if="e.admin_id == myId">
+        <p @click="luNotif(e.id, element.notification.notif)" :class="hote">
+          Vous avez invitez {{ e.guests.nom }} au projet {{ e.projets.nom }} son
+          status est {{ e.status }}
+        </p>
+        <button @click="deleteInvitation(e.id)">supprimer</button>
+      </div>
+      <div v-else>
+        <p @click="luNotif(e.id, element.notification.notif)" :class="invite">
+          {{ e.admins.nom }} vous a invité au projet {{ e.projets.nom }} votre
+          status est {{ e.status }}
+        </p>
+        <div v-if="e.status == 'pending'">
+          <i
+            @click="acceptInvitation(e.projet_id, e.id, e.admin_id)"
+            class="fa-solid fa-check"
+          ></i>
+          <i
+            class="fa-solid fa-xmark"
+            @click="refuseInvitation(e.projet_id, e.id, e.admin_id)"
+          ></i>
+        </div>
+        <button @click="deleteInvitation(e.id)">supprimer</button>
+      </div>
+    </div>
+  </div>
+  <!-- <div class="bigContainer">
     <div class="container">
       <h3>Hote</h3>
-
       <div v-for="(element, index) in response.hote" :key="index">
-        <!-- <div v-if="showHote">
-          <input type="hidden" :value="(backgroundColorHote[index] = 'blue')" />
-        </div> -->
         <div class="containerHote">
           <p :style="{ color: 'blue' }" @click="changeColorHote(element.id)">
             Vous avez invité {{ element.guests.nom }} au projet
@@ -47,6 +77,7 @@
                 )
               "
             ></i>
+            <button @click="deleteInvitation(element.id)">supprimer</button>
           </div>
           <div v-else>
             <p
@@ -60,7 +91,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
 </template>
 
 <script>
@@ -68,13 +99,13 @@ import axios from "axios";
 const NotificationComponent = {
   data() {
     return {
-      response: {
-        hote: "",
-        invite: "",
-      },
+      response: "",
       status: "",
       showHote: true,
       showInvite: true,
+      myId: null,
+      nombreLue: 0,
+      nombreNonLu: 4,
     };
   },
   beforeMount() {
@@ -83,6 +114,22 @@ const NotificationComponent = {
   },
 
   methods: {
+    async deleteInvitation(id) {
+      const res = await axios.delete(`api/invitation/${id}`);
+      console.log(res);
+      if (res.data.readAt != "0") {
+        let invite = this.response.find(
+          (e) => e.invitation[0].id == res.data.id
+        );
+        invite.notification.notif = res.data.readAt;
+        this.$emit("luNotif", 1);
+      }
+      let index = this.response.findIndex(
+        (e) => e.invitation[0].id == res.data.id
+      );
+      console.log(index);
+      this.response.splice(index, 1);
+    },
     tempsReel() {
       window.Echo.private("App.Models.User." + User.id).notification(
         (notification) => {
@@ -90,40 +137,18 @@ const NotificationComponent = {
           if (notification.invitationAdmin != null) {
             return false;
           }
-          this.response.invite.push(notification.invitationInvit);
+          console.log(this.response, "la raposasasa");
+          this.response.push(notification.invite);
+          console.log(this.response, "new respponse");
         }
       );
     },
     async dataInvitation() {
       const res = await axios.get("api/invitation");
       console.log(res, "le res");
-      this.response.invite = res.data.invite;
-      this.response.hote = res.data.hote;
-      this.joinChannel();
-    },
-    joinChannel() {
-      this.response.invite.forEach((element) => {
-        window.Echo.private(`invitation${element.id}`).listen(
-          ".invitation",
-          (e) => {
-            console.log(e, "hello invit");
-          }
-        );
-      });
-      this.response.hote.forEach((element) => {
-        window.Echo.private(`invitation${element.id}`).listen(
-          ".invitation",
-          (e) => {
-            console.log(e, "hello admin");
-            let test = this.response.hote.find(
-              (element) => element.id === e.idInvit
-            );
-            console.log(test);
-            test.status = e.status;
-            console.log(this.response.hote, "je suis hote");
-          }
-        );
-      });
+      this.myId = res.data.id;
+      this.response = res.data.invite;
+      console.log(this.response, "this respose");
     },
 
     acceptInvitation(id, idInvit, adminId) {
@@ -131,6 +156,7 @@ const NotificationComponent = {
       this.responseInvit(id, idInvit, adminId);
     },
     async responseInvit(id, idInvit, adminId) {
+      console.log(id);
       const res = await axios.put(`api/invitation/${id}`, {
         invitation: this.status,
         idInvit: idInvit,
@@ -138,40 +164,36 @@ const NotificationComponent = {
       });
       console.log(res);
       if (res.status === 200) {
-        let projet = this.response.invite.find(
-          (element) => element.projet_id === res.data.idProjet
+        let invite = this.response.find(
+          (e) => e.invitation[0].id == res.data.id
         );
-        projet.status = res.data.status;
+        console.log(invite);
+        invite.invitation[0].status = res.data.status;
+        if (res.data.readAt == "0") {
+          return false;
+        } else {
+          invite.notification.notif = res.data.readAt;
+          this.$emit("luNotif", 1);
+        }
       }
     },
     refuseInvitation(id, idInvit, adminId) {
       this.status = "refuse";
       this.responseInvit(id, idInvit, adminId);
     },
-    changeColorHote(id) {
-      this.luNotif(id);
-    },
-    changeColorInvite(id, color) {
-      console.log(color, "couleur");
-      if (color != "blue") {
+    async luNotif(id, notif) {
+      console.log(this.nombreNonLu);
+
+      if (notif != null) {
         return false;
       }
-      console.log("changeColor");
-      this.luNotif(id);
-    },
-    async luNotif(id) {
       const res = await axios.put("api/notifications", { id: id });
-      console.log(res, "changeColorInvite");
-      if (res.status === 200) {
-        let color = this.response.invite.find(
-          (element) => element.id === res.data.id
-        );
-        color.color = "";
-        console.log(this.response.invite);
-        let retrait = 1;
-        console.log(retrait);
-        this.$store.dispatch("envoieNbr", retrait);
-      }
+      console.log(res, "changeColor");
+      console.log(this.response, "inviatat");
+      console.log(res.data.id, "id");
+      let invite = this.response.find((e) => e.invitation[0].id == res.data.id);
+      invite.notification.notif = res.data.readAt;
+      this.$emit("luNotif", 1);
     },
   },
 };
@@ -179,6 +201,15 @@ export default NotificationComponent;
 </script>
 
 <style lang="scss" scoped>
+.condition {
+  display: none;
+}
+.lu {
+  color: black;
+}
+.nonLu {
+  color: blue;
+}
 .bigContainer {
   display: grid;
   grid-template-columns: 3fr 3fr 1fr;

@@ -31,11 +31,11 @@ Broadcast::channel('projet{id}', function ($user, int $id) {
     }
 });
 
-Broadcast::channel('invitation{id}', function ($user, int $id) {
-    $invit = Invitation::find($id);
-    if ($invit->admin_id === $user->id || $invit->user_id === $user->id) {
-        return true;
-    } else {
-        return false;
-    }
-});
+// Broadcast::channel('invitation{id}', function ($user, int $id) {
+//     $invit = Invitation::find($id);
+//     if ($invit->admin_id === $user->id || $invit->user_id === $user->id) {
+//         return true;
+//     } else {
+//         return false;
+//     }
+// });

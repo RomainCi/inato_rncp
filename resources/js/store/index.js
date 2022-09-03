@@ -2,17 +2,17 @@ import { createStore } from "vuex";
 
 export default createStore({
     state: {
-        nombre: "",
+        id: "",
     },
     getters: {},
     mutations: {
-        notifNbr(state, nbr) {
-            state.nombre = nbr;
+        idN(state, ide) {
+            state.id = ide;
         },
     },
     actions: {
-        envoieNbr: ({ commit }, nbr) => {
-            commit("notifNbr", nbr);
+        envoieId: ({ commit }, id) => {
+            commit("idN", id);
         },
     },
     modules: {},

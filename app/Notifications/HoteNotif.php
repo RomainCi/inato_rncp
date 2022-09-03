@@ -8,8 +8,9 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Messages\BroadcastMessage;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 
-class HoteNotif extends Notification
+class HoteNotif extends Notification implements ShouldBroadcastNow
 {
     // use Queueable;
     public $invitation;
@@ -50,14 +51,18 @@ class HoteNotif extends Notification
 
     /**
      * Get the array representation of the notification.
-     *
+     *@return array
      */
     public function toArray($notifiable)
     {
-        return $this->invitation->id;
+        return [
+            "invitation" => $this->invitation
+        ];
     }
     public function toBroadcast($notifiable)
     {
-        return new BroadcastMessage(["invitationAdmin" => $this->invitation]);
+        return new BroadcastMessage([
+            "invite" => ["invitation" => $this->invitation, "notification" => ["notif" => null]],
+        ]);
     }
 }

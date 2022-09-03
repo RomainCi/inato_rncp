@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('titre_tache');
             $table->unsignedBigInteger('list_id');
             $table->unsignedBigInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('no action');
             $table->foreign('list_id')->references('id')->on('lists')->onDelete('cascade');
             $table->integer('index');
             $table->timestamps();

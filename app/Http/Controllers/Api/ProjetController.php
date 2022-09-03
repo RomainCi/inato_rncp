@@ -34,11 +34,8 @@ class ProjetController extends Controller
                     ), "titre" => $value->projetRole->nom, "id" => $value->projetRole->id, "role" => $value->role];
                 }
             }
-
-
-
-
             return response()->json([
+                "message" => 'succes',
                 "projet" => $projet ?? null,
             ]);
         } catch (\Exception $e) {
@@ -68,7 +65,6 @@ class ProjetController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
-
             $user = Auth::User();
             $request->validate([
                 "titre" => 'required|string'
@@ -94,11 +90,15 @@ class ProjetController extends Controller
                     "projet_id" => $projet->id,
                     "role" => 1
                 ]);
+                // return response()->json([
+                //     "message" => "succes",
+                //     "nom" => $projet['nom'],
+                //     "id" => $projet['id'],
+                //     "image" => $projet['path'],
+                // ]);
                 return response()->json([
                     "message" => "succes",
-                    "nom" => $projet['nom'],
-                    "id" => $projet['id'],
-                    "image" => $projet['path'],
+                    "projet" => $projet,
                 ]);
             }
             $request->validate([
@@ -120,11 +120,15 @@ class ProjetController extends Controller
                 $backgroudUser->chemin,
                 now()->addMinutes(1)
             );
+            $projets = RoleProjet::with('userRole')
+                ->with('projetRole')
+                ->where('user_id', $user->id)
+                ->where('projet_id', $projet->id)
+                ->first();
+            $dataProjet = ["urlprivate" => $url, "titre" => $projets->projetRole->nom, "id" => $projets->projetRole->id, "role" => $projets->role];
             return response()->json([
                 "message" => "succes",
-                "nom" => $projet['nom'],
-                "id" => $projet['id'],
-                "urlPrivate" => $url
+                "projet" => $dataProjet
             ]);
         } catch (\Exception $e) {
             dd($e);
@@ -133,7 +137,6 @@ class ProjetController extends Controller
     public function destroy(int $id): JsonResponse
     {
         try {
-
             if (!Gate::allows('admin-projet', $id)) {
                 return response()->json([
                     "message" => "vous n'avez pas l'autorisation"

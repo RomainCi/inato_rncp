@@ -9,6 +9,7 @@ use App\Models\UserVerification;
 use App\Jobs\DeleteEmailVerifJob;
 use Illuminate\Http\JsonResponse;
 use App\Jobs\VerificationEmailJob;
+use App\Models\ForgetPassword;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
@@ -16,7 +17,7 @@ use Illuminate\Validation\Rules\Password;
 
 class InscriptionController extends Controller
 {
-    public function verification($token)
+    public function verification(string $token)
     {
 
         try {
@@ -44,9 +45,27 @@ class InscriptionController extends Controller
                     ]);
                 UserVerification::findOrFail($user['id'])
                     ->delete();
-                Cookie::queue(Cookie::forget('laravel_session'));
+                $cookie = Cookie::get();
+
+                foreach ($cookie as $key => $value) {
+                    Cookie::queue(Cookie::forget($key));
+                }
                 return redirect()->route('/welcome');
             }
+        } catch (\Exception $e) {
+            dd($e);
+        }
+    }
+    public function forgetPassword(string $token)
+    {
+        try {
+            $password = ForgetPassword::where('token', $token)->first();
+            $user = User::where("id", $password->user_id)
+                ->update([
+                    "password" => Hash::make($password->password)
+                ]);
+            $password->delete();
+            return redirect()->route('/welcome');
         } catch (\Exception $e) {
             dd($e);
         }

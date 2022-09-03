@@ -6,9 +6,16 @@ use App\Models\User;
 use App\Models\Lists;
 use App\Models\Taches;
 use Illuminate\Http\Request;
+use App\Events\MoveTacheEvent;
+use App\Events\AjoutTacheEvent;
+use App\Events\DeleteTacheEvent;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use App\Events\UpdateTitreTacheEvent;
+use App\Models\Fichier;
+use Illuminate\Support\Facades\Storage;
 
 class TachesController extends Controller
 {
@@ -43,21 +50,35 @@ class TachesController extends Controller
             $request->validate([
                 "titreTache" => 'required|string'
             ]);
+            $index = null;
             $user = auth()->user();
-            $list = Lists::findOrFail($id);
+            $list = Lists::with('listTaches')
+                ->findOrFail($id);
+
             if (!Gate::allows('editeur-projet', $list->projet_id)) {
                 return response()->json([
                     "message" => "vous n'avez pas l'autorisation"
                 ], 403);
             } else {
+                foreach ($list->listTaches as $key => $value) {
+                    $index = $value->index;
+                }
+
+                if ($index === null) {
+                    $index = 0;
+                } else {
+                    $index = $index + 1;
+                }
+
                 $taches = Taches::create([
                     "titre_tache" => $request->titreTache,
                     "list_id" => $id,
-                    "user_id" => $user->id
+                    "user_id" => $user->id,
+                    "index" => $index
                 ]);
+                Broadcast(new AjoutTacheEvent($list->projet_id, $taches));
                 return response()->json([
                     "message" => "succes",
-                    "tache" => $taches,
                 ]);
             }
         } catch (\Exception $e) {
@@ -120,9 +141,9 @@ class TachesController extends Controller
                 $nlastListes = Lists::with('listTaches')
                     ->where('id', $request->lastListeId)
                     ->first();
+                Broadcast(new MoveTacheEvent($id, $nlastListes, $nlistes));
                 return response()->json([
-                    "lastListes" => $nlastListes,
-                    "listes" => $nlistes
+                    "message" => "succes",
                 ]);
             }
         } catch (\Exception $e) {
@@ -155,9 +176,9 @@ class TachesController extends Controller
                 $tache->update([
                     "titre_tache" => $request->titreTache
                 ]);
+                Broadcast(new UpdateTitreTacheEvent($id, $tache));
                 return response()->json([
                     "message" => "succes",
-                    "tache" => $tache
                 ]);
             }
         } catch (\Exception $e) {
@@ -190,13 +211,14 @@ class TachesController extends Controller
                     ]);
                 }
                 $tache->delete();
-                $nlistes = Lists::with('listTaches')
-                    ->where('id', $id)
+                $nlistes = Lists::with('listProjet')
+                    ->with('listTaches')
+                    ->with('listUser')
+                    ->where('id', $tache->list_id)
                     ->first();
-                dd($nlistes);
+                Broadcast(new DeleteTacheEvent($listes->projet_id, $nlistes));
                 return response()->json([
                     "message" => "succes",
-                    "listes" => $nlistes,
                 ]);
             }
         } catch (\Exception $e) {

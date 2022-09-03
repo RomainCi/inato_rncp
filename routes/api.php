@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\FichierController;
 use App\Models\Projet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -28,7 +29,7 @@ use App\Http\Controllers\Api\ListesController;
 Route::post('/users', [UserApiController::class, 'store']);
 
 Route::post('/login', [ConnexionController::class, 'authentification']);
-
+Route::post('/forget', [ConnexionController::class, 'forgetPassword']);
 
 Route::group(['prefix' => 'projet', 'middleware' => ['auth:sanctum']], function () {
     Route::get('', [ProjetController::class, 'index']);
@@ -45,12 +46,16 @@ Route::group(['prefix' => 'users', 'middleware' => ['auth:sanctum']], function (
     Route::get('', [UserApiController::class, 'index']);
     Route::put('', [UserApiController::class, 'update']);
     Route::put('/password', [UserApiController::class, 'updatePassword']);
+    Route::put('/email', [UserApiController::class, 'updateEmail']);
+    Route::post('/deconnexion', [UserApiController::class, 'deconnexion']);
+    Route::delete('/', [UserApiController::class, 'destroy']);
 });
 
 Route::group(['prefix' => 'invitation', 'middleware' => ['auth:sanctum']], function () {
     Route::post('', [ProjetInvitation::class, 'store']);
     Route::get('', [ProjetInvitation::class, 'index']);
     Route::put('/{id}', [ProjetInvitation::class, 'update']);
+    Route::delete('/{id}', [ProjetInvitation::class, 'destroy']);
 });
 
 Route::group(['prefix' => 'notifications', 'middleware' => ['auth:sanctum']], function () {
@@ -61,6 +66,8 @@ Route::group(['prefix' => 'notifications', 'middleware' => ['auth:sanctum']], fu
 Route::group(['prefix' => 'listes', 'middleware' => ['auth:sanctum']], function () {
     Route::get('/{id}', [ListesController::class, 'show']);
     Route::post('/{id}', [ListesController::class, 'store']);
+    Route::put('titre/{id}', [ListesController::class, 'update']);
+    Route::delete('/{id}', [ListesController::class, 'destroy']);
 });
 
 Route::group(['prefix' => 'taches', 'middleware' => ['auth:sanctum']], function () {
@@ -70,4 +77,14 @@ Route::group(['prefix' => 'taches', 'middleware' => ['auth:sanctum']], function 
     Route::put('titre/{id}', [TachesController::class, 'update']);
     Route::delete('/{id}', [TachesController::class, 'destroy']);
 });
+
+Route::group(['prefix' => 'fichier', 'middleware' => ['auth:sanctum']], function () {
+    Route::post('', [FichierController::class, 'store']);
+    Route::get('/{id}', [FichierController::class, 'index']);
+    Route::get('downloadFichier/{id}', [FichierController::class, 'downloadFichier']);
+});
+Route::get('verification', function () {
+    return response()->json(["message" => true]);
+})->middleware(['auth:sanctum']);
+
 Route::post('/test', [ProjetController::class, 'test']);

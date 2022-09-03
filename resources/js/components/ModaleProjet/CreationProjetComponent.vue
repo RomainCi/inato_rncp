@@ -68,7 +68,8 @@ const CreationProjetComponent = {
       fd.append("titre", this.titre);
       await axios.get("sanctum/csrf-cookie");
       const res = await axios.post("api/projet", fd);
-      console.log(res, "delete projet");
+      console.log(res, "creation projet projet");
+      this.$emit("ajoutProjet", res.data.projet);
     },
     idBackground(id) {
       this.image = id;

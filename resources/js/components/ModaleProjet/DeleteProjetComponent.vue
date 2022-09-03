@@ -25,8 +25,8 @@ export default {
         const res = await axios.delete(`api/projet/${this.id}`);
         console.log(res);
         if (res.status === 200) {
-          this.dataProjet();
-          this.modaleProjet();
+          // this.dataProjet();
+          // this.modaleProjet();
           window.Echo.leave(`projet${this.id}`);
         }
       } else {

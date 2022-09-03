@@ -12,6 +12,8 @@ try {
 
 window.axios = require("axios");
 window.axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
+axios.defaults.withCredentials = true;
+axios.defaults.baseURL = "http://127.0.0.1:8000";
 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
@@ -27,8 +29,35 @@ window.io = require("socket.io-client");
 window.Echo = new Echo({
     broadcaster: "socket.io",
     host: window.location.hostname + ":6001",
-    authEndpoint: "/broadcasting/auth",
+    auth: {
+        headers: {
+            "X-CSRF-TOKEN": "{{csrf_token()}}",
+        },
+    },
 });
+// window.Echo = new Echo({
+//     broadcaster: "socket.io",
+//     host: window.location.hostname + ":6001",
+//     //     authEndpoint: null,
+//     authorizer: (channel, options) => {
+//         console.log(channel, "channel");
+//         return {
+//             authorize: (socketId, callback) => {
+//                 axios
+//                     .post("/api/broadcasting/auth", {
+//                         socket_id: socketId,
+//                         channel_name: channel.name,
+//                     })
+//                     .then((response) => {
+//                         callback(false, response.data);
+//                     })
+//                     .catch((error) => {
+//                         callback(true, error);
+//                     });
+//             },
+//         };
+//     },
+// });
 
 // window.Echo.channel("projet").listen(".chat-message", (e) => {
 //     console.log(e);

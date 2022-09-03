@@ -13,7 +13,7 @@ use Illuminate\Contracts\Queue\ShouldBeUnique;
 class DeleteEmailVerifJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    protected $id = "";
+    protected int $id;
     /**
      * Create a new job instance.
      *

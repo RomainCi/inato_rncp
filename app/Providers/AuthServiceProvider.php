@@ -49,6 +49,7 @@ class AuthServiceProvider extends ServiceProvider
             return $user->editeurProjet->contains('projet_id', $id);
         });
         Gate::define('acces-lists', function (User $user, int $id): bool {
+            // dd($user->roleProjets->contains('projet_id', $id));
             return $user->roleProjets->contains('projet_id', $id);
         });
         Gate::define('move-item', function (User $user, Model $liste): bool {

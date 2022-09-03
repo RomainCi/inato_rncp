@@ -18,6 +18,9 @@ use App\Http\Controllers\InscriptionController;
 |
 */
 
+Route::get('phpmyinfo', function () {
+    phpinfo();
+})->name('phpmyinfo');
 Route::get('/', function () {
     return view('welcome');
 })->name('/welcome');
@@ -25,12 +28,12 @@ Route::get('/', function () {
 
 
 Route::get('/inscription/{token}', [InscriptionController::class, 'verification']);
-
+Route::get('/reset/password/{token}', [InscriptionController::class, 'forgetPassword']);
 
 
 Route::get('/{vue_capture?}', function () {
     return view('welcome');
-});
+})->where('vue_capture', '[\/\w\.-]*');
 // Route::get('/{details/vue_capture?}', function () {
 //     return view('welcome');
 // });

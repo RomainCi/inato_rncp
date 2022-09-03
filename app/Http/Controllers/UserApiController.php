@@ -2,14 +2,19 @@
 
 namespace App\Http\Controllers;
 
+// use auth;
+use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\UserVerification;
 use App\Jobs\DeleteEmailVerifJob;
 use App\Jobs\VerificationEmailJob;
-use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\Rules\Password;
+
 
 class UserApiController extends Controller
 {
@@ -27,6 +32,7 @@ class UserApiController extends Controller
                 "nom" => $user->nom,
                 "prenom" => $user->prenom,
                 "email" => $user->email,
+                "id" => $user->id
             ]);
         } catch (\Exception $e) {
             dd($e);
@@ -50,33 +56,38 @@ class UserApiController extends Controller
                 "prenom" => 'string|required',
                 "password_confirmation" => 'required'
             ]);
-
-            try {
-                $userVerif = UserVerification::create([
-                    'email' => $request->email,
-                    'password' => Hash::make($request->password),
-                    'nom' => $request->nom,
-                    'prenom' => $request->prenom,
-                    'token' => Str::random(55)
-                ]);
-            } catch (\Exception $e) {
+            $mail = User::where('email', $request->email)->exists();
+            if ($mail === true) {
                 return response()->json([
-                    "message" => "cette email existe deja",
-                    "erreur" => $e
-                ], 400);
+                    'succes' => 'notSucces',
+                    "message" => "cette email existe deja"
+                ],);
             }
-
-
+            $mail = UserVerification::where('email', $request->email)->exists();
+            if ($mail === true) {
+                return response()->json([
+                    'succes' => 'not succes',
+                    "message" => "Valider votre email"
+                ],);
+            }
+            $userVerif = UserVerification::create([
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'nom' => $request->nom,
+                'prenom' => $request->prenom,
+                'token' => Str::random(55)
+            ]);
             dispatch(new VerificationEmailJob($userVerif['email'], $userVerif['token'], $userVerif['nom']))->delay(now()->addSeconds(3));
             dispatch(new DeleteEmailVerifJob($userVerif['id']))->delay(now()->addMinutes(5));
             return response()->json([
+                'succes' => 'succes',
                 "message" => "Vous avez 5 min pour vérifier votre email",
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 "message" => "erreur lors de l'inscritpion",
                 "erreur" => $e,
-            ], 400);
+            ], 403);
         }
     }
 
@@ -99,7 +110,7 @@ class UserApiController extends Controller
             if (Hash::check($request->ancien, $user->password)) {
                 User::where('id', $user->id)
                     ->update([
-                        "password" => $request->password
+                        "password" => Hash::make($request->password)
                     ]);
                 return response()->json([
                     "message" => "succes",
@@ -129,32 +140,45 @@ class UserApiController extends Controller
             $request->validate([
                 "prenom" => "string|required",
                 "nom" => "string|required",
-                "email" => "email|required",
             ]);
-
-            if ($user->email == $request->email) {
-                User::where("id", $user->id)
-                    ->update([
-                        "nom" => $request->nom,
-                        "prenom" => $request->prenom
-                    ]);
-                return response()->json([
-                    "message" => "succes",
+            User::where("id", $user->id)
+                ->update([
                     "nom" => $request->nom,
                     "prenom" => $request->prenom
                 ]);
-            } else {
-
-                $userVerif = UserVerification::create([
-                    'email' => $request->email,
-                    'nom' => $request->nom,
-                    'prenom' => $request->prenom,
-                    'token' => Str::random(55),
-                    'password' => $user->password,
+            return response()->json([
+                "message" => "succes",
+                "nom" => $request->nom,
+                "prenom" => $request->prenom
+            ]);
+        } catch (\Exception $e) {
+            dd($e);
+        }
+    }
+    public function updateEmail(Request $request)
+    {
+        try {
+            $request->validate([
+                "email" => "required|email"
+            ]);
+            $user = auth()->user();
+            if ($user->email == $request->email) {
+                return response()->json([
+                    "message" => "meme adresse mail"
                 ]);
-                dispatch(new VerificationEmailJob($userVerif['email'], $userVerif['token'], $userVerif['nom']))->delay(now()->addSeconds(3));
-                dispatch(new DeleteEmailVerifJob($userVerif['id']))->delay(now()->addMinutes(5));
             }
+            $userVerif = UserVerification::create([
+                'email' => $request->email,
+                'nom' => $user->nom,
+                'prenom' => $user->prenom,
+                'token' => Str::random(55),
+                'password' => $user->password,
+            ]);
+            dispatch(new VerificationEmailJob($userVerif['email'], $userVerif['token'], $userVerif['nom']))->delay(now()->addSeconds(3));
+            dispatch(new DeleteEmailVerifJob($userVerif['id']))->delay(now()->addMinutes(5));
+            return response()->json([
+                "message" => "oki"
+            ]);
         } catch (\Exception $e) {
             dd($e);
         }
@@ -163,11 +187,24 @@ class UserApiController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * 
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy()
     {
-        //
+        $user = auth()->user();
+        $userCompte = User::findOrFail($user->id);
+        $userCompte->delete();
+        Auth::guard('web')->logout();
+        return response()->json([
+            "message" => 'succes'
+        ]);
+    }
+
+    public function deconnexion(Request $request)
+    {
+        Auth::guard('web')->logout();
+
+        return response()->json('', 204);
     }
 }

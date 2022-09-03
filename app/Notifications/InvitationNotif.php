@@ -3,13 +3,14 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\BroadcastMessage;
-use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Messages\BroadcastMessage;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 
-class InvitationNotif extends Notification
+class InvitationNotif extends Notification implements ShouldBroadcastNow
 {
     // use Queueable;
     public $invitation;
@@ -52,14 +53,19 @@ class InvitationNotif extends Notification
      * Get the array representation of the notification.
      *
      * @param  mixed  $notifiable
-     * 
+     * @return array
      */
     public function toArray($notifiable)
     {
-        return $this->invitation->id;
+        return [
+            "invitation" => $this->invitation
+        ];
     }
     public function toBroadcast($notifiable)
     {
-        return new BroadcastMessage(["invitationInvit" => $this->invitation]);
+        return new BroadcastMessage([
+            "invite" => ["invitation" => $this->invitation, "notification" => ["notif" => null]],
+
+        ]);
     }
 }

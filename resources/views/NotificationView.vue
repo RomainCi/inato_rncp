@@ -1,8 +1,11 @@
 <template>
   <div>
-    <navbar></navbar>
+    <navbar
+      v-on:watchNumberNull="this.watchNumber = $event"
+      :watchNumber="watchNumber"
+    ></navbar>
     <h1>Notificaction</h1>
-    <notification></notification>
+    <notification v-on:luNotif="this.watchNumber = $event"></notification>
   </div>
 </template>
 
@@ -15,7 +18,15 @@ const NotificationView = {
     notification: NotificationComponent,
   },
   data() {
-    return {};
+    return {
+      watchNumber: null,
+      nbr: "",
+    };
+  },
+  methods: {
+    toto(e) {
+      console.log(e, "ttotootot testststs");
+    },
   },
 };
 export default NotificationView;

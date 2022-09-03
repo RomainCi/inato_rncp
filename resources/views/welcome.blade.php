@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         {{-- <meta name="csrf-token" content="{{csrf_token()}}"> --}}
         <title>Laravel</title>
-
+        <link href="https://fonts.googleapis.com/css2?family=Lexend+Mega:wght@200;400&display=swap" rel="stylesheet">
         {{-- <!-- Fonts -->
         <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 
@@ -16,12 +16,15 @@
 
         
     </head>
-    <body class="antialiased">
+    <body class="antialiased" style="margin: 0px">
        <div id="app">
            
        </div>
-       <script>window.User={
+       <script>
+        console.log("WIndows USer");
+       window.User={
         id:{{optional(auth()->user())->id}}}</script>
+        
        {{-- <script src="//http://localhost:6001/socket.io/socket.io.js"></script> --}}
        <script src="{{mix('js/app.js')}}"></script>
        <script src="https://kit.fontawesome.com/40f157f11e.js" crossorigin="anonymous"></script>

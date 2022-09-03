@@ -7,10 +7,9 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>HIIIII</h1>
     <p>Bonjour {{$nom}},</p>
-    <p>Veuillez cliquer sur lien ci dessous pour valider votre inscription</p>
-    <a href="http://127.0.0.1:8000/inscription/{{$token}}">Lien d'inscription</a>
+    <p>Veuillez cliquer sur lien ci dessous pour verifier votre adresse email</p>
+    <a href="http://127.0.0.1:8000/inscription/{{$token}}">Lien de verification</a>
     <p>Ceci est un email automatique pour toute question sur inato veuillez vous rendre dans la partie contact</p>
     <p>Cordialment l'équipe inato</p>
 </body>

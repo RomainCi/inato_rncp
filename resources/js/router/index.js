@@ -4,6 +4,7 @@ import EditView from "../../views/EditView.vue";
 import ProjetView from "../../views/ProjetView.vue";
 import NotificationView from "../../views/NotificationView.vue";
 import ListesView from "../../views/ListesView.vue";
+import axios from "axios";
 
 const routes = [
     {
@@ -20,6 +21,7 @@ const routes = [
         path: "/projet",
         name: "projet",
         component: ProjetView,
+        meta: { requiresAuth: true },
     },
     {
         path: "/notification",
@@ -33,8 +35,16 @@ const routes = [
         props: true,
     },
 ];
-
-export default createRouter({
-    history: createWebHistory(),
+const router = createRouter({
+    history: createWebHistory(process.env.BASE_URL),
     routes,
 });
+router.beforeEach((to, from, next) => {
+    if (to.meta.requiresAuth && !localStorage.getItem("authAcces")) {
+        return next({ name: "home" });
+    } else {
+        return next();
+    }
+});
+
+export default router;

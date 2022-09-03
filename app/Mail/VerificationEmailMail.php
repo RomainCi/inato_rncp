@@ -10,8 +10,8 @@ use Illuminate\Queue\SerializesModels;
 class VerificationEmailMail extends Mailable
 {
     use Queueable, SerializesModels;
-    protected $token = "";
-    protected $nom = "";
+    protected string $token = "";
+    protected string $nom = "";
 
     /**
      * Create a new message instance.
