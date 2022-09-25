@@ -3,15 +3,20 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Notifications\Messages\BroadcastMessage;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 
-class InvitationNotif extends Notification implements ShouldBroadcastNow
+
+class InvitationNotif extends Notification implements ShouldBroadcast
 {
+    use Dispatchable, InteractsWithSockets, SerializesModels;
     // use Queueable;
     public $invitation;
     /**

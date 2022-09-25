@@ -1,0 +1,35 @@
+.select2-selection--single {
+    border: 1px solid #0d85bc !important;
+    border-radius: none !important;
+}
+.select2-container--default .select2-selection--single {
+    border: 1px solid #0d85bc !important;
+    border-radius: none !important;
+    background-color: #d3edf8 !important;
+}
+
+.select2-container--default {
+    border: 2px solid #0d85bc;
+    background-color: #d3edf8 !important;
+}
+/* .select2-container--default .select2-selection--single {
+    background-color: #fff;
+    border: 5px solid #0d85bc;
+    border-radius: 4px;
+} */
+.select2-results__option {
+    font-family: "Lexend Mega", sans-serif;
+    color: #1ea3dc;
+    font-size: 0.9rem;
+}
+.select2-container--default .select2-search--dropdown .select2-search__field {
+    font-family: "Lexend Mega", sans-serif;
+    color: #1ea3dc;
+    background-color: #d3edf8;
+    height: 1.6em;
+    font-family: "Lexend Mega", sans-serif;
+    font-size: 0.9em;
+    border-radius: 5px;
+    outline: none;
+    border: 2px solid #0d85bc !important;
+}

@@ -4,8 +4,10 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         {{-- <meta name="csrf-token" content="{{csrf_token()}}"> --}}
-        <title>Laravel</title>
+        <title>Connexion</title>
+        <link href="{{ asset('/css/style.css') }}" rel="stylesheet"> 
         <link href="https://fonts.googleapis.com/css2?family=Lexend+Mega:wght@200;400&display=swap" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="https://select2.github.io/select2-bootstrap-theme/css/select2-bootstrap.css">
         {{-- <!-- Fonts -->
         <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 
@@ -16,7 +18,7 @@
 
         
     </head>
-    <body class="antialiased" style="margin: 0px">
+    <body class="antialiased" style="margin: 0px;">
        <div id="app">
            
        </div>

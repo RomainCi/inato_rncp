@@ -1,17 +1,10 @@
 <template>
   <section class="home">
-    <!-- logo -->
-
-    <!-- component -->
     <div class="container">
       <img src="../../public/images/logo.png" />
       <connexion titre="connexion" :inscription="show" v-show="visible" />
       <inscription titre="inscription" :connexion="show" v-show="!visible" />
     </div>
-
-    <!-- <div>
-      <router-link to="/projet">projet</router-link>
-    </div> -->
   </section>
 </template>
 

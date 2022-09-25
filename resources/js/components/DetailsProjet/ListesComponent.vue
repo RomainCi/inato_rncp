@@ -1,15 +1,35 @@
 <template>
   <div>
-    {{ role }}
-    <div v-if="role != 'visiteur'">
-      <CreationListe></CreationListe>
-    </div>
-    <!-- Modale -->
+    <div
+      class="modal-overlay"
+      v-show="showCreationListe"
+      @click="showCreationListeModale"
+    ></div>
     <div
       class="modal-overlay"
       v-show="editModale"
       @click="editModale = false"
     ></div>
+    <div :class="floutage" class="containerCreation">
+      <div class="containerRoleNom">
+        <div>{{ nomProjet }}</div>
+        <div>{{ role }}</div>
+      </div>
+      <div v-if="role != 'visiteur'">
+        <button class="buttonListe" @click="showCreationListeFloutage">
+          créer une liste
+        </button>
+      </div>
+    </div>
+    <div
+      v-show="showCreationListe"
+      class="containerListe modale"
+      v-if="role != 'visiteur'"
+    >
+      <CreationListe></CreationListe>
+    </div>
+    <!-- Modale -->
+
     <div
       class="modale-overlay-tache"
       v-show="visibilite[this.indexModale]"
@@ -23,11 +43,11 @@
     <div
       class="modal-overlay-bis"
       v-show="showModale[this.idModaleListe]"
-      @click="showModale[this.idModaleListe] = false"
+      @click="showModaleListe()"
     ></div>
     <div v-if="editModale" class="modal"></div>
     <!-- fin Modale -->
-    <div class="bigContainer" v-if="role != 'visiteur'">
+    <div :class="floutage" class="bigContainer" v-if="role != 'visiteur'">
       <div class="container" v-for="(element, indexo) in listes" :key="indexo">
         <CreationTache
           v-on:modaleTache="this.visibilite[this.indexModale] = $event"
@@ -44,89 +64,98 @@
           @dragenter.prevent
           @dragover.prevent
         >
-          {{
-            element.titre_list
-          }}<i
-            class="fa-solid fa-ellipsis-vertical"
-            @click="showOptionListe(element.id)"
-          ></i>
-          <div class="modalBiss" v-show="showModale[element.id]">
+          <div class="containerTitre">
+            <div :class="voir[element.id]">
+              {{ element.titre_list }}
+            </div>
+            <i
+              :class="voir[element.id]"
+              class="fa-solid fa-ellipsis"
+              @click="showOptionListe(element.id)"
+            ></i>
+          </div>
+          <div class="modalBis" v-show="showModale[element.id]">
             <ModifTitre
               :titre="element.titre_list"
               :idContent="element.id"
               :content="'liste'"
             >
             </ModifTitre>
+            <DeleteTaches
+              v-on:closePopup="this.showModale[element.id] = $event"
+              :idContent="element.id"
+              :content="'liste'"
+            ></DeleteTaches>
           </div>
           <div class="modalBis" v-show="showModale[element.id]">
-            <ul>
-              <DeleteTaches
-                v-on:closePopup="this.showModale[element.id] = $event"
-                :idContent="element.id"
-                :content="'liste'"
-              ></DeleteTaches>
-            </ul>
+            <ul></ul>
           </div>
-          <li
-            v-for="(e, inde) in element.list_taches"
-            :key="inde"
-            @dragstart="startDrag($event, e)"
-            draggable="true"
-            class="livisi"
-            :value="e.index"
-          >
-            {{ e.titre_tache
-            }}<i
-              class="fa-solid fa-ellipsis-vertical"
-              @click="showOption(e.id, e.titre_tache)"
-            ></i>
+          <div class="containerTache">
+            <li
+              v-for="(e, inde) in element.list_taches"
+              :key="inde"
+              @dragstart="startDrag($event, e)"
+              draggable="true"
+              class="livisi"
+              :value="e.index"
+            >
+              <p class="tache">{{ e.titre_tache }}</p>
 
-            <div class="modalBiss" v-show="popup[e.id]">
-              <ModifTitre
-                :titre="titreTache"
-                :idContent="idModale"
-                :content="'tache'"
-              ></ModifTitre>
-            </div>
-            <div class="modalBis" v-show="popup[e.id]">
-              <ul>
-                <DeleteTaches
-                  v-on:closePopup="this.popup[this.idModale] = $event"
-                  :idContent="idModale"
-                  :content="'tache'"
-                ></DeleteTaches>
-                <AjoutFichier :tache_id="e.id"></AjoutFichier>
-                <DownloadFichier :tache_id="e.id"></DownloadFichier>
-              </ul>
-            </div>
-          </li>
+              <i
+                class="fa-solid fa-ellipsis"
+                @click="showOption(e.id, e.titre_tache)"
+              ></i>
+              <!-- </div> -->
+              <div class="modalBis" v-show="popup[e.id]"></div>
+              <div class="modalBiss" v-show="popup[e.id]">
+                <ul>
+                  <ModifTitre
+                    :titre="titreTache"
+                    :idContent="idModale"
+                    :content="'tache'"
+                  ></ModifTitre>
+                  <DeleteTaches
+                    v-on:closePopup="this.popup[this.idModale] = $event"
+                    :idContent="idModale"
+                    :content="'tache'"
+                  ></DeleteTaches>
+                  <AjoutFichier :tache_id="e.id"></AjoutFichier>
+                  <DownloadFichier :tache_id="e.id"></DownloadFichier>
+                </ul>
+              </div>
+            </li>
+          </div>
         </ul>
       </div>
     </div>
     <!-- visteur -->
-    <div v-else class="bigContainer">
+    <div v-else :class="floutage" class="bigContainer">
       <div class="container" v-for="(element, indexo) in listes" :key="indexo">
         <ul class="miniContainer">
-          {{
-            element.titre_list
-          }}
-          <li
-            v-for="(e, inde) in element.list_taches"
-            :key="inde"
-            class="livisi"
-            :value="e.index"
-          >
-            {{ e.titre_tache
-            }}<i
-              class="fa-solid fa-ellipsis-vertical"
-              @click="showOption(e.id, e.titre_tache)"
-            ></i>
-            <div class="modalBis" v-show="popup[e.id]">
-              <ul>
-                <DownloadFichier :tache_id="e.id"></DownloadFichier>
-              </ul>
+          <div class="containerTitre">
+            <div>
+              {{ element.titre_list }}
             </div>
-          </li>
+          </div>
+          <div class="containerTache">
+            <li
+              v-for="(e, inde) in element.list_taches"
+              :key="inde"
+              class="livisi"
+              :value="e.index"
+            >
+              <p>{{ e.titre_tache }}</p>
+              <i
+                class="fa-solid fa-ellipsis"
+                @click="showOption(e.id, e.titre_tache)"
+              ></i>
+              <div class="modalBiss" v-show="popup[e.id]">
+                <ul>
+                  <DownloadFichier :tache_id="e.id"></DownloadFichier>
+                </ul>
+              </div>
+            </li>
+          </div>
         </ul>
       </div>
     </div>
@@ -153,6 +182,7 @@ export default {
   props: {
     listes: Object,
     role: String,
+    nomProjet: String,
   },
   data() {
     return {
@@ -166,10 +196,14 @@ export default {
       saveIndex: "",
       showModale: [],
       idModaleListe: "",
+      showCreationListe: false,
+      floutage: "",
+      voir: [],
     };
   },
   beforeMount() {
     this.connexionServeur();
+    // this.voir[this.element.id] = true;
   },
   methods: {
     closeModale() {
@@ -283,8 +317,13 @@ export default {
       });
     },
     showOptionListe(id) {
+      this.voir[id] = "cache";
       this.idModaleListe = id;
       this.showModale[id] = true;
+    },
+    showModaleListe() {
+      this.voir[this.idModaleListe] = true;
+      this.showModale[this.idModaleListe] = false;
     },
     showOption(id, titreTache) {
       this.titreTache = titreTache;
@@ -294,28 +333,131 @@ export default {
       // this.editModale = true;
     },
     // ajoutListe(event) {},
+    showCreationListeModale() {
+      this.floutage = "d";
+      this.showCreationListe = false;
+      this.$emit("floutage", "noFloutage");
+    },
+    showCreationListeFloutage() {
+      this.floutage = "floutage";
+      this.showCreationListe = true;
+      this.$emit("floutage", "floutage");
+    },
   },
 };
 </script>
 
 <style scoped>
+.cache {
+  display: none;
+}
+.floutage {
+  filter: blur(8px);
+}
+.buttonListe {
+  text-transform: uppercase;
+  font-size: 0.5rem;
+  font-family: "Lexend Mega", sans-serif;
+  background-color: #1ea3dc;
+  color: white;
+  border-radius: 6.25em;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 6px;
+  margin-bottom: 6px;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+.containerTitre .fa-solid {
+  color: white;
+  margin-right: 10px;
+  cursor: pointer;
+}
+.livisi .fa-solid {
+  color: #39dee0;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.containerCreation {
+  display: flex;
+  justify-content: space-between;
+  margin-left: 5%;
+  margin-right: 5%;
+  background: #39dee0;
+  padding: 13px;
+  border-radius: 10px;
+  align-items: center;
+  margin-top: 45px;
+}
+.containerCreation .containerRoleNom {
+  display: flex;
+  flex-direction: column;
+}
+.containerCreation .containerRoleNom div {
+  font-size: 0.6rem;
+  font-family: "Lexend Mega", sans-serif;
+  color: black;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
 .bigContainer {
   display: flex;
-  position: absolute;
+  margin-left: 5%;
+  margin-top: 45px;
+  overflow: auto;
+  scrollbar-color: #39dee0 white;
+}
+.bigContainer .container {
+  margin-right: 20px;
+}
+.containerTache {
+  background-color: white;
+  border-radius: 10px;
 }
 .livisi {
-  background-color: red;
   height: 30px;
   position: relative;
+  background-color: #fff;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+
+  align-items: center;
+}
+.livisi p {
+  margin: Opx;
+  color: black;
+  font-family: "Lexend Mega", sans-serif;
+  font-size: 0.7em;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .miniContainer {
-  position: relative;
-  background-color: green;
-  margin-left: 2px;
-  margin-right: 2px;
+  background-color: #39dee0;
+  list-style: none;
+  width: 7rem;
+  padding-left: 2rem;
+  border-radius: 10px;
+  margin-top: 8px;
 }
-
+.miniContainer .containerTitre {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.containerTitre div {
+  text-transform: uppercase;
+  overflow: hidden;
+  font-family: "Lexend Mega", sans-serif;
+  font-size: 0.7em;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  text-overflow: ellipsis;
+}
 .modal {
   position: fixed;
   top: 50%;
@@ -330,6 +472,7 @@ export default {
 
   padding: 25px;
 }
+
 .modal-overlay {
   position: absolute;
   top: 0;
@@ -337,8 +480,8 @@ export default {
   right: 0;
   bottom: 0;
   z-index: 98;
-  background-color: rgba(0, 0, 0, 0.3);
   height: 100%;
+  cursor: pointer;
 }
 .modal-overlay-bis {
   position: absolute;
@@ -349,6 +492,7 @@ export default {
   z-index: 98;
   background-color: rgba(0, 0, 0, 0.3);
   height: 100%;
+  cursor: pointer;
 }
 .modale-overlay-tache {
   position: absolute;
@@ -357,23 +501,78 @@ export default {
   right: 0;
   bottom: 0;
   z-index: 98;
+  background-color: rgba(0, 0, 0, 0.3);
+  cursor: pointer;
 }
 .modalBis {
-  transform: translate(-50%, -50%);
-  top: -85%;
-  left: 152%;
   z-index: 99;
   margin: 0px;
-  background-color: red;
   position: relative;
+}
+.modalBis ul {
+  padding: 0px;
+  list-style: none;
+  text-align: center;
+}
+.modalBis ul li {
+  font-family: "Lexend Mega", sans-serif;
+  font-size: 0.6em;
+  align-self: center;
+  border-radius: 6.25em;
+  padding: 0.5em;
+  background-color: #1ea3dc;
+  color: white;
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
 }
 .modalBiss {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 150;
+  width: 75vw;
+  max-width: 400px;
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 25px;
   display: flex;
-  position: relative;
-  z-index: 99;
-  top: -20px;
+  justify-content: center;
+  align-items: center;
+  height: 120px;
 }
-.modalBiss input {
+.modalBiss ul {
+  list-style: none;
+  padding: 0px;
+}
+
+/* .modalBiss input {
   width: 50%;
+} */
+.modale {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 150;
+  width: 75vw;
+  max-width: 600px;
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 25px;
+}
+@media only screen and (min-width: 1200px) {
+  .containerCreation {
+    margin-left: 15%;
+    margin-right: 15%;
+    height: 10vh;
+  }
+  .buttonListe {
+    font-size: 0.9rem;
+  }
+  .containerCreation .containerRoleNom div {
+    font-size: 0.9rem;
+  }
 }
 </style>

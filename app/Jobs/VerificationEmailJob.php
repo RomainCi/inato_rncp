@@ -14,9 +14,9 @@ use Illuminate\Contracts\Queue\ShouldBeUnique;
 class VerificationEmailJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    protected $email = "";
-    protected $token = "";
-    protected $nom = "";
+    protected String $email;
+    protected String $token;
+    protected String $nom;
     /**
      * Create a new job instance.
      *

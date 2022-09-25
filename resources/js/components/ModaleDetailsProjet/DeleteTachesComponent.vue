@@ -35,5 +35,26 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
+li {
+  /* color: black;
+  font-size: 0.6rem;
+  font-family: "Lexend Mega", sans-serif;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-align: center; */
+  cursor: pointer;
+  text-align: center;
+  font-family: "Lexend Mega", sans-serif;
+  font-size: 0.6em;
+  align-self: center;
+  border-radius: 6.25em;
+  padding: 0.5em;
+  background-color: #1ea3dc;
+  color: white;
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
 </style>

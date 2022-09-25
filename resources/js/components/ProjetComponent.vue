@@ -1,5 +1,5 @@
 <template>
-  <div class="tutu">
+  <div>
     <!-- modale close verifie la height -->
 
     <div
@@ -7,33 +7,41 @@
       v-show="showModaleBis"
       @click="modaleProjet"
     ></div>
-    <div
-      class="modal-overlay"
-      v-show="modaleUser"
-      @click="modaleUser = false"
-    ></div>
+    <div class="modal-overlay" v-show="modaleUser" @click="modaleUserF"></div>
 
     <div
       class="modal-overlay"
       v-show="modaleInvit"
-      @click="modaleInvit = false"
+      @click="modaleInvitationF"
     ></div>
 
     <div
       class="modal-overlay"
       v-show="modaleDelete"
-      @click="modaleDelete = false"
+      @click="modaleDeleteF"
+    ></div>
+    <div
+      class="modal-overlay"
+      v-show="modaleQuitter"
+      @click="modaleQuitter = false"
     ></div>
     <!-- <div class="close" @click="modaleInvit = false">&#x2715;</div> -->
 
     <!-- modale close -->
 
-    <CreationProjet v-on:ajoutProjet="ajoutProjet($event)"></CreationProjet>
+    <CreationProjet
+      v-on:ajoutProjet="ajoutProjet($event)"
+      v-on:floutage="ajoutFloutage($event)"
+      v-on:noFloutage="enleverFloutage($event)"
+      :class="floutagee"
+    ></CreationProjet>
 
-    <h2>Mes projets</h2>
     <div class="bigAllContainer">
       <div v-if="modaleInvit" class="modal">
-        <InvitationProjet :idProjet="idProjet"></InvitationProjet>
+        <InvitationProjet
+          v-on:floutage="ajoutFloutageInvit($event)"
+          :idProjet="idProjet"
+        ></InvitationProjet>
       </div>
       <div v-if="modaleDelete" class="modal">
         <deleteProjet :idDelete="idDelete"></deleteProjet>
@@ -50,20 +58,23 @@
         class="bigContainer"
         v-for="(element, index) in response.projet"
         :key="index"
+        :class="floutage"
       >
-        <div class="container">
-          <i class="fa-solid fa-ellipsis-vertical" @click="showOption(index)">
-            <div
-              :style="{
-                'background-image': `url(${element.urlprivate})`,
-              }"
-              class="backgroundProjet"
-            ></div>
-          </i>
-
-          <p>{{ element.titre }}{{ index }}<br />{{ element.role }}</p>
-          <br />
-          <p @click="enterProjet(element.id)">entrer</p>
+        <div class="container" :class="showBlock[index]">
+          <div class="miniContainer">
+            <p>
+              <span>{{ element.titre }}</span
+              ><br />{{ element.role }}
+            </p>
+            <img @click="enterProjet(element.id)" src="../assets/enter.png" />
+          </div>
+          <i class="fa-solid fa-ellipsis" @click="showOption(index)"></i>
+          <div
+            :style="{
+              'background-image': `url(${element.urlprivate})`,
+            }"
+            class="backgroundProjet"
+          ></div>
         </div>
 
         <div
@@ -71,7 +82,9 @@
           class="modalBis"
           v-show="popup[index]"
         >
-          <p>Vous n'avez pas les acces</p>
+          <ul>
+            <li @click="quitterProjet(element.id, index)">QUITTER</li>
+          </ul>
         </div>
 
         <div
@@ -80,11 +93,10 @@
           v-show="popup[index]"
         >
           <ul>
-            <li @click="modaleDeleteProjet(element.id, index)">supprimer</li>
-            <li @click="modaleInvitation(element.id, index)">inviter</li>
-            <li @click="modaleGestionUser(element.id, index)">
-              gerer {{ element.id }}
-            </li>
+            <li @click="modaleDeleteProjet(element.id, index)">SUPPRIMER</li>
+            <li @click="modaleInvitation(element.id, index)">INVITER</li>
+            <li @click="modaleGestionUser(element.id, index)">ROLES</li>
+            <li @click="quitterProjet(element.id, index)">QUITTER</li>
           </ul>
         </div>
       </div>
@@ -98,6 +110,7 @@ import GestionUserComponent from "./ModaleProjet/GestionUserComponent.vue";
 import CreationProjetComponent from "./ModaleProjet/CreationProjetComponent.vue";
 import InvitationProjetComponent from "./ModaleProjet/InvitationProjetComponent.vue";
 import DeleteProjetComponent from "./ModaleProjet/DeleteProjetComponent.vue";
+
 import router from "../router";
 
 const ProjetComponent = {
@@ -110,13 +123,14 @@ const ProjetComponent = {
   props: {},
   data() {
     return {
-      response: "",
+      response: [],
       popup: [""],
       showModaleBis: false,
       saveIndex: "",
       modaleInvit: false,
       modaleUser: false,
       modaleDelete: false,
+      modaleQuitter: false,
       invitation: {
         email: "",
         id: "",
@@ -125,6 +139,9 @@ const ProjetComponent = {
       redisIdprojet: null,
       active: false,
       idDelete: "",
+      floutage: "",
+      floutagee: "",
+      showBlock: [""],
     };
   },
   beforeMount() {
@@ -143,6 +160,7 @@ const ProjetComponent = {
           (element) => element.id === this.redisIdprojet
         );
         this.response.projet.splice(index, 1);
+        window.Echo.leave(`projet${this.redisIdprojet}`);
       } else {
         let projet = this.response.projet.find(
           (element) => element.id === this.redisIdprojet
@@ -169,9 +187,17 @@ const ProjetComponent = {
       const res = await axios.post("api/invitation", this.invitation);
       console.log(res, "inviation");
     },
-
+    async quitterProjet(id, index) {
+      const res = await axios.post(`api/projet/quitter/${id}`, {
+        index: index,
+      });
+      console.log(res);
+    },
     //////////fin requete//////////
     joinChannel() {
+      if (this.response.projet == null) {
+        return false;
+      }
       this.response.projet.forEach((element) => {
         console.log("je rentre dans le channel projet");
         console.log(element.id);
@@ -198,39 +224,83 @@ const ProjetComponent = {
       });
     },
     ajoutProjet(event) {
-      console.log(event);
-      console.log(this.response.projet);
-      this.response.projet.push(event);
-      this.joinChannel();
+      console.log(event, "event");
+      this.dataProjet();
+      // console.log(this.response, "ajout projet event");
+      // this.response.projet.push(event, "push");
+      // this.joinChannel();
     },
     showOption(index) {
       console.log(index, "hey");
       this.popup[index] = true;
       this.saveIndex = index;
       this.showModaleBis = true;
+      this.showBlock[index] = "cache";
     },
     modaleDeleteProjet(id, index) {
       this.idDelete = id;
       this.modaleDelete = true;
       this.popup[index] = false;
+      this.showBlock[index] = "d";
+      this.floutage = "floutage";
+      this.floutagee = "floutage";
+      this.$emit("floutage", "floutage");
     },
     modaleProjet() {
       this.popup[this.saveIndex] = false;
       this.showModaleBis = false;
+      this.showBlock[this.saveIndex] = "d";
     },
     modaleInvitation(id, index) {
       this.idProjet = id;
       this.modaleInvit = true;
       this.popup[index] = false;
+      this.showBlock[index] = "d";
+      this.showModaleBis = false;
     },
     modaleGestionUser(id, index) {
       console.log(id);
       this.idProjet = id;
       this.modaleUser = true;
       this.popup[index] = false;
+      this.showBlock[index] = "d";
+      this.floutage = "floutage";
+      this.floutagee = "floutage";
+      this.$emit("floutage", "floutage");
+    },
+    modaleInvitationF() {
+      this.floutage = "d";
+      this.floutagee = "d";
+      this.modaleInvit = false;
+      this.$emit("noFloutage", "noFloutage");
+    },
+    modaleDeleteF() {
+      this.floutage = "d";
+      this.floutagee = "d";
+      this.modaleDelete = false;
+      this.$emit("noFloutage", "noFloutage");
+    },
+    modaleUserF() {
+      this.floutage = "d";
+      this.floutagee = "d";
+      this.modaleUser = false;
+      this.$emit("noFloutage", "noFloutage");
+    },
+    ajoutFloutage(e) {
+      this.floutage = e;
+      this.$emit("floutage", "floutage");
+    },
+    ajoutFloutageInvit(e) {
+      this.floutage = e;
+      this.floutagee = e;
+      this.$emit("floutage", "floutage");
+    },
+    enleverFloutage(e) {
+      this.floutage = e;
+      this.$emit("noFloutage", "noFloutage");
     },
     enterProjet(id) {
-      router.push({ name: "detailsProjet", params: { projetId: id } });
+      this.$router.push("/detailsProjet");
       localStorage.setItem("idProjet", id);
     },
   },
@@ -239,8 +309,23 @@ export default ProjetComponent;
 </script>
 
 <style lang="scss" scoped>
+i {
+  color: white;
+  align-self: flex-end;
+  margin-right: 4px;
+  font-size: 25px;
+  z-index: 1;
+}
+.floutage {
+  filter: blur(8px);
+}
 .bigAllContainer {
   display: flex;
+  margin-left: 5%;
+  margin-top: 20px;
+  margin-right: 5%;
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
 .bigContainer {
   // position: relative;
@@ -250,21 +335,51 @@ export default ProjetComponent;
 .container {
   position: relative;
   display: flex;
-  height: 120px;
-  width: 120px;
-
-  margin: 5px;
-
+  height: 100px;
+  width: 100px;
   overflow: hidden;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 7px;
+  margin-bottom: 20px;
+}
+.container img {
+  height: 1.5em;
+  width: 1.5em;
+  margin-right: 20px;
+  cursor: pointer;
+}
+.container img:hover {
+  filter: invert(57%) sepia(74%) saturate(3417%) hue-rotate(159deg)
+    brightness(91%) contrast(103%);
+}
+.container p {
+  margin: 0px;
+  text-transform: uppercase;
+  font-size: 8px;
+  font-family: "Lexend Mega", sans-serif;
+  color: black;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  margin-left: 4px;
+}
+.container .miniContainer {
+  display: flex;
+  margin-top: 10px;
+  margin-left: 10x;
+  justify-content: space-between;
+  z-index: 1;
+}
+.container .miniContainer span {
+  font-size: 10px;
+  text-overflow: ellipsis;
 }
 .backgroundProjet {
   position: absolute;
   left: 0;
   top: 0;
-  width: 120px;
-  height: 120px;
-
-  z-index: -1;
+  width: 100px;
+  height: 100px;
   opacity: 0.5;
   content: "";
   background-size: cover;
@@ -276,28 +391,6 @@ export default ProjetComponent;
   background-size: cover;
 }
 
-.formulaire {
-  display: flex;
-  flex-direction: column;
-}
-.close {
-  display: flex;
-  justify-content: flex-end;
-  content: "&#10006";
-}
-
-#app {
-  position: relative;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  width: 100vw;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
 .modal-overlay {
   position: absolute;
   top: 0;
@@ -305,8 +398,8 @@ export default ProjetComponent;
   right: 0;
   bottom: 0;
   z-index: 98;
-  background-color: rgba(0, 0, 0, 0.3);
   height: 100%;
+  cursor: pointer;
 }
 .modale-overlay {
   position: absolute;
@@ -315,6 +408,7 @@ export default ProjetComponent;
   right: 0;
   bottom: 0;
   z-index: 98;
+  cursor: pointer;
 }
 
 .modal {
@@ -322,17 +416,25 @@ export default ProjetComponent;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 99;
-
-  width: 100%;
-  max-width: 400px;
+  z-index: 150;
+  width: 75vw;
+  max-width: 600px;
   background-color: #fff;
   border-radius: 16px;
-
   padding: 25px;
 }
 li {
   list-style: none;
+  font-family: "Lexend Mega", sans-serif;
+  font-size: 0.7rem;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  color: white;
+  cursor: pointer;
+  margin-left: 1px;
+}
+li:hover {
+  color: rgb(81, 249, 255);
 }
 ul {
   padding: 0px;
@@ -341,10 +443,53 @@ ul {
   // position: relative;
   top: 0%;
   left: 0%;
-  // transform: translate(-50%, -50%);
   z-index: 99;
-  margin: 0px;
-  background-color: red;
+  height: 100px;
+  width: 100px;
+  background-color: #0964d7;
+  border-radius: 7px;
+  margin-bottom: 20px;
+}
+.cache {
+  display: none;
+}
+@media only screen and (min-width: 1200px) {
+  .container {
+    height: 150px;
+    width: 150px;
+  }
+  .modalBis {
+    height: 150px;
+    width: 150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .backgroundProjet {
+    height: 150px;
+    width: 150px;
+  }
+  .bigAllContainer {
+    margin-left: 15%;
+    margin-right: 15%;
+    justify-content: space-between !important;
+  }
+  li {
+    font-size: 1rem;
+    margin-left: 3px;
+  }
+  .container .miniContainer span {
+    font-size: 13px;
+  }
+  .container img {
+    height: 2rem;
+    width: 2rem;
+  }
+}
+@media only screen and (min-width: 900px) {
+  .bigAllContainer {
+    justify-content: space-evenly;
+  }
 }
 </style>
 

@@ -2,8 +2,9 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ExampleTest extends TestCase
 {
@@ -12,10 +13,12 @@ class ExampleTest extends TestCase
      *
      * @return void
      */
-    public function test_the_application_returns_a_successful_response()
+    public function test_de_la_route_forget_password()
     {
-        $response = $this->get('/');
-
+        $user = User::first();
+        $response = $this->post('api/forget', [
+            "email" => $user->email
+        ]);
         $response->assertStatus(200);
     }
 }

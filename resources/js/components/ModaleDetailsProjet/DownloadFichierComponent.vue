@@ -1,11 +1,13 @@
 <template>
-  <li @click="recupFichier">Telecharger fichier</li>
+  <li @click="recupFichier">download</li>
   <div class="modal" v-show="!show">
     <div class="close" @click="show = !show">&#x2715;</div>
-    <h4>download</h4>
+    <p>download</p>
     <div v-if="response != null">
       <div v-for="(element, index) in response" :key="index">
-        <p @click="downloadFichier(element.id)">{{ element.nom }}</p>
+        <p class="download" @click="downloadFichier(element.id)">
+          {{ element.nom }}
+        </p>
       </div>
     </div>
     <div v-else>
@@ -73,14 +75,55 @@ export default {
 </script>
 
 <style scoped>
+.close {
+  cursor: pointer;
+  width: 5%;
+}
+.download {
+  cursor: pointer;
+}
+.download:hover {
+  color: #1ea3dc;
+}
+li {
+  /* color: black;
+  font-size: 0.6rem;
+  font-family: "Lexend Mega", sans-serif;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-align: center; */
+  cursor: pointer;
+  text-align: center;
+  font-family: "Lexend Mega", sans-serif;
+  font-size: 0.6em;
+  align-self: center;
+  border-radius: 6.25em;
+  padding: 0.5em;
+  background-color: #1ea3dc;
+  color: white;
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+/* li:hover {
+  color: red;
+} */
+p {
+  color: black;
+  font-size: 0.8rem;
+  font-family: "Lexend Mega", sans-serif;
+  text-transform: uppercase;
+  text-align: center;
+}
 .modal {
   position: fixed;
-  top: 218%;
-  left: -60%;
+  top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
   z-index: 99;
-
-  width: 100%;
+  min-height: 120px;
+  width: 75vw;
   max-width: 400px;
   background-color: #fff;
   border-radius: 16px;

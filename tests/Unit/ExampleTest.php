@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
+use App\Models\UserVerification;
 
 class ExampleTest extends TestCase
 {
@@ -11,8 +12,4 @@ class ExampleTest extends TestCase
      *
      * @return void
      */
-    public function test_that_true_is_true()
-    {
-        $this->assertTrue(true);
-    }
 }

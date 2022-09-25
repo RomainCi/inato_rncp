@@ -48,6 +48,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at' => 'datetime',
     ];
 
+
     public function projets(): HasMany
     {
         return $this->hasMany(Projet::class, "user_id", "id")->select('id', 'nom', 'path');

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="bigContainer">
     <div
       class="modale-overlay"
       v-show="modaleEdit"
@@ -22,18 +22,19 @@
     ></div>
     <div v-show="modaleEdit" class="modal">
       <form @submit.prevent="envoieForm">
-        <label for="nom">Nom</label>
+        <label for="nom">nom</label>
         <input type="text" v-model="nom" />
         <!-- <div v-show="v$.user.nom.$error">
           {{ this.v$.user.nom.required.$message }}
         </div> -->
 
-        <label for="prenom">prenom</label>
+        <label for="prenom">prénom</label>
         <input type="text" v-model="prenom" />
         <!-- <div v-show="v$.user.prenom.$error">
           {{ this.v$.user.prenom.required.$message }}
         </div> -->
-        <button>valider</button>
+
+        <button class="buttonModal">valider</button>
       </form>
     </div>
     <div v-show="modaleEditEmail" class="modal">
@@ -41,47 +42,80 @@
         <label for="email">email</label>
         <input type="email" v-model="email" />
         <p v-show="show == 'a'">Vous avez 5 min pour valider votre email</p>
-        <button>valider</button>
+        <button class="buttonModal">valider</button>
       </form>
     </div>
     <div v-show="modaleEditPassword" class="modal">
       <form @submit.prevent="envoiePassword">
         <label for="ancien">ancien mot de passe</label>
-        <input type="text" v-model="securite.ancien" />
+        <input type="password" v-model="securite.ancien" />
 
         <label for="password">nouveau mot de passe</label>
-        <input type="text" v-model="securite.password" />
+        <input type="password" v-model="securite.password" />
 
         <label for="confirmation">confirmation du mot de passe</label>
-        <input type="text" v-model="securite.password_confirmation" />
+        <input type="password" v-model="securite.password_confirmation" />
 
-        <button>valider</button>
+        <button class="buttonModal">valider</button>
       </form>
     </div>
     <div v-show="modaleDeleteUser" class="modal">
       <form @submit.prevent="deleteUser">
         <label>Ecrivez supprimer le compte </label>
         <input type="text" v-model="supprimer" />
-        <button>valider</button>
+        <button class="buttonModal">valider</button>
       </form>
     </div>
-    <h2>Mes informations</h2>
-    <div>
-      <p>Nom: {{ user.nom }}</p>
-      <p>Prenom: {{ user.prenom }}</p>
-      <p @click="modaleEdit = true">Edit</p>
-    </div>
-
-    <h2>Securite</h2>
-    <div>
-      <p>Email : {{ user.email }}</p>
-      <p @click="modaleEditEmail = true">Edit email</p>
-    </div>
-    <div>
-      <p @click="modaleEditPassword = true">Changer de mot de passe</p>
-    </div>
-    <div>
-      <p @click="modaleDeleteUser = true">supprimer le compte</p>
+    <div class="mainContainer">
+      <img
+        class="imageMobile"
+        src="../assets/photoProfil.png"
+        alt="photoProfil"
+      />
+      <div class="container">
+        <div class="containerInfo">
+          <img
+            class="imageBureau"
+            src="../assets/photoProfil.png"
+            alt="photoProfil"
+          />
+          <div class="bureauInfo">
+            <div class="containerEditP">
+              <p>mes informations</p>
+              <button @click="modaleEdit = true">edit</button>
+            </div>
+            <p class="info">Nom: {{ user.nom }}</p>
+            <p class="info">Prénom: {{ user.prenom }}</p>
+          </div>
+        </div>
+        <div class="containerBureau">
+          <div class="bureauSecu">
+            <div class="containerInfo secu">
+              <div class="containerSecurite">
+                <p class="securite">sécurité</p>
+              </div>
+              <div class="editMail">
+                <p class="infoEmail">Email : {{ user.email }}</p>
+                <button class="buttonEmail" @click="modaleEditEmail = true">
+                  edit
+                </button>
+              </div>
+            </div>
+            <div class="buttonPassword">
+              <button @click="modaleEditPassword = true">
+                Changer de mot de passe
+              </button>
+              <button @click="modaleDeleteUser = true">
+                supprimer le compte
+              </button>
+            </div>
+          </div>
+          <div class="containerImage">
+            <p class="compte">compte</p>
+            <img src="../assets/edit.png" alt="edit" />
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <!-- <div>
@@ -284,19 +318,128 @@ export default EditComponent;
 </script>
 
 <style scoped>
+.imageBureau {
+  display: none;
+}
+.containerImage {
+  display: none;
+}
+.containerBureau {
+  width: 100%;
+}
+.mainContainer {
+  background-color: white;
+  margin-top: 45px;
+  margin-left: 5%;
+  margin-right: 5%;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  justify-content: space-around;
+}
+.mainContainer img {
+  height: 150px;
+  width: 150px;
+  align-self: center;
+}
+.mainContainer .containerEditP {
+  display: flex;
+  margin-bottom: 15px;
+  justify-content: space-between;
+  width: 100%;
+  width: 100%;
+}
+
+.mainContainer .container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.containerInfo {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+p {
+  margin: 0px;
+  font-family: "Lexend Mega", sans-serif;
+  font-size: 0.9rem;
+  color: #1ea3dc;
+  text-transform: uppercase;
+  align-self: center;
+}
+button {
+  font-family: "Lexend Mega", sans-serif;
+  font-size: 0.6rem;
+  /* align-self: center; */
+  border-radius: 6.25em;
+  padding-right: 1.3em;
+  padding-left: 1.3em;
+  background-color: #1ea3dc;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-left: 15px;
+  text-transform: uppercase;
+  text-align: center;
+}
+/* .containerSecurite {
+  display: flex;
+  justify-content: space-around;
+} */
+
+.buttonEmail {
+  font-size: 0.6rem;
+}
+.info {
+  font-size: 0.7rem;
+  color: black;
+  margin-bottom: 15px;
+  width: 100%;
+}
+.infoEmail {
+  font-size: 0.7rem;
+  color: black;
+}
+.securite {
+  margin-bottom: 15px;
+}
 .modal {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 99;
-
-  width: 100%;
-  max-width: 400px;
+  filter: blur(0px) !important;
+  width: 75vw;
+  height: 30vh;
+  max-width: 600px;
+  max-height: 600px;
   background-color: #fff;
   border-radius: 16px;
 
   padding: 25px;
+}
+.editMail {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+.buttonPassword {
+  width: 70%;
+}
+.buttonPassword button {
+  margin: 0px;
+  font-size: 0.6rem;
+  width: 100%;
+  margin-bottom: 15px;
 }
 .modale-overlay {
   position: absolute;
@@ -311,6 +454,9 @@ export default EditComponent;
 form {
   display: flex;
   flex-direction: column;
+  justify-content: space-evenly;
+  height: 100%;
+  width: 100%;
 }
 .close {
   display: flex;
@@ -333,12 +479,99 @@ form {
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 99;
-
-  width: 100%;
   max-width: 400px;
   background-color: #fff;
   border-radius: 16px;
 
   padding: 25px;
+}
+.modal form label {
+  font-family: "Lexend Mega", sans-serif;
+  color: #1ea3dc;
+  text-align: center;
+  font-size: 0.9em;
+}
+.modal form input {
+  background-color: #d3edf8;
+  height: 1.2em;
+  font-family: "Lexend Mega", sans-serif;
+  font-size: 0.9em;
+  border-radius: 5px;
+  outline: none;
+  border: 2px solid #d3edf8;
+}
+.buttonModal {
+  margin-left: 0px;
+  font-size: 1em;
+}
+@media only screen and (min-width: 1100px) {
+  .mainContainer img {
+    height: 200px;
+    width: 200px;
+    align-self: center;
+  }
+  .mainContainer {
+    height: 60vh;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 20px;
+    width: 851px;
+  }
+  .containerImage {
+    display: flex;
+  }
+  .imageMobile {
+    display: none;
+  }
+  .imageBureau {
+    display: flex;
+  }
+  .containerInfo {
+    display: flex;
+    flex-direction: row;
+  }
+  .containerBureau {
+    display: flex;
+    height: 60%;
+  }
+  .container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .bureauInfo {
+    align-self: center;
+  }
+  .bureauSecu {
+    align-self: center;
+  }
+  .secu {
+    display: flex;
+    flex-direction: column;
+  }
+  p {
+    font-size: 1.4rem;
+  }
+  .bigContainer {
+    display: flex;
+    justify-content: calc();
+  }
+  .compte {
+    position: relative;
+    left: 135px;
+    top: 86px;
+  }
+  .info,
+  .infoEmail {
+    font-size: 1rem;
+  }
+  .compte img {
+    height: 250px;
+    width: 250px;
+  }
+  .buttonPassword button {
+    font-size: 1rem;
+  }
 }
 </style>

@@ -9,12 +9,13 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Models\Invitation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Broadcast;
 use App\Models\UserBackgroundImagePublique;
-
+use Symfony\Contracts\Service\Attribute\Required;
 
 class ProjetController extends Controller
 {
@@ -26,6 +27,7 @@ class ProjetController extends Controller
                 ->with('projetRole')
                 ->where('user_id', $user->id)
                 ->get();
+            // dd($projets);
             foreach ($projets as $key => $value) {
                 if (Storage::disk('s3')->exists($value->projetRole->path)) {
                     $projet[$key] = ["urlprivate" => Storage::temporaryUrl(
@@ -34,6 +36,7 @@ class ProjetController extends Controller
                     ), "titre" => $value->projetRole->nom, "id" => $value->projetRole->id, "role" => $value->role];
                 }
             }
+            // dd($projet);
             return response()->json([
                 "message" => 'succes',
                 "projet" => $projet ?? null,
@@ -66,6 +69,7 @@ class ProjetController extends Controller
     {
         try {
             $user = Auth::User();
+
             $request->validate([
                 "titre" => 'required|string'
             ]);
@@ -90,12 +94,7 @@ class ProjetController extends Controller
                     "projet_id" => $projet->id,
                     "role" => 1
                 ]);
-                // return response()->json([
-                //     "message" => "succes",
-                //     "nom" => $projet['nom'],
-                //     "id" => $projet['id'],
-                //     "image" => $projet['path'],
-                // ]);
+
                 return response()->json([
                     "message" => "succes",
                     "projet" => $projet,
@@ -154,7 +153,7 @@ class ProjetController extends Controller
         }
     }
 
-    public function show(int $id)
+    public function show(int $id): JsonResponse
     {
         $user = auth()->user();
         $projet = RoleProjet::where('projet_id', $id)
@@ -165,7 +164,7 @@ class ProjetController extends Controller
         ]);
     }
 
-    public function gestionROle(Request $request, int $projetId)
+    public function gestionROle(Request $request, int $projetId): JsonResponse
     {
 
         try {
@@ -184,6 +183,13 @@ class ProjetController extends Controller
                         ->update([
                             "role" => $value['role'],
                         ]);
+                    if ($value['role'] === 'supprimer') {
+                        Invitation::where("projet_id", $projetId)
+                            ->where('user_id', $value['user_id'])
+                            ->update([
+                                "status" => "supprimer"
+                            ]);
+                    }
                 }
                 RoleProjet::where("role", 'supprimer')->delete();
 
@@ -212,6 +218,32 @@ class ProjetController extends Controller
                 return response()->json([
                     "message" => "succes",
                     "projetAdmin" => $adminProjet,
+                ]);
+            }
+        } catch (\Exception $e) {
+            dd($e);
+        }
+    }
+    public function quitterProjet(int $projetId): JsonResponse
+    {
+        try {
+            if (!Gate::allows('acces-lists', $projetId)) {
+                return response()->json([
+                    "message" => "Vous n'avez pas les acces"
+                ]);
+            } else {
+                $roleProjet = RoleProjet::where('projet_id', $projetId)
+                    ->where('user_id', auth()->user()->id)
+                    ->first();
+                $roleProjet->delete();
+                Invitation::where("projet_id", $projetId)
+                    ->where('user_id', auth()->user()->id)
+                    ->update([
+                        "status" => "supprimer"
+                    ]);
+                Broadcast(new RoleEvent($projetId));
+                return response()->json([
+                    "message" => "succes"
                 ]);
             }
         } catch (\Exception $e) {

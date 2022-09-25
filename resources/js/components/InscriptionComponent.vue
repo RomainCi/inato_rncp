@@ -270,7 +270,6 @@ export default InscriptionComponent;
   font-size: 0.9em;
 }
 .container button {
-  margin-top: 1em;
   font-family: "Lexend Mega", sans-serif;
   font-size: 0.9em;
   align-self: center;

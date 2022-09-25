@@ -12,7 +12,7 @@
         "redis": {
             "host": "SG-island-crib-8260-53739.servers.mongodirector.com",
             "port": "6379",
-            "connectTimeout": 90000,
+            "connectTimeout": 900000,
             "password": "NmQ39DYxBEtCGfPTt4nNGadsffSC7myU"
         },
         "sqlite": {}

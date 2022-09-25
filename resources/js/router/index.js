@@ -32,7 +32,6 @@ const routes = [
         path: "/detailsProjet",
         name: "detailsProjet",
         component: ListesView,
-        props: true,
     },
 ];
 const router = createRouter({

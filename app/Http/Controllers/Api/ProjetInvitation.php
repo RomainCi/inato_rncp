@@ -35,6 +35,7 @@ class ProjetInvitation extends Controller
                     ->with('guests')
                     ->get(), "notification" => ["notif" => $value->read_at]];
             }
+
             return response()->json([
                 "invite" => $invitation ?? [],
                 "message" => "succes",

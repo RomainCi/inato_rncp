@@ -16,6 +16,10 @@
         <div class="error" v-else>
           {{ (emailF = "correct") }}
         </div>
+        <div class="show" v-if="showPassword == 'a'">
+          VOUS AVEZ 5 MINUTES POUR VALIDER VOTRE EMAIL
+        </div>
+        <div class="show" v-if="showPassword == 'b'">EMAIL INCONNUE</div>
         <button>VALIDER</button>
       </form>
     </div>
@@ -86,6 +90,7 @@ const ConnexionComponent = {
       emailF: "correct",
       show: "",
       email: "",
+      showPassword: "",
     };
   },
   validations() {
@@ -115,17 +120,21 @@ const ConnexionComponent = {
   methods: {
     submitForm() {
       this.v$.$touch();
-      !this.v$.user.email.$error ? this.connexion() : console.log("erreur");
+      !this.v$.user.email.$error && !this.v$.user.password.$error
+        ? this.connexion()
+        : console.log("erreur");
     },
     /////////////////REQUETE//////////////
     async connexion() {
       const csrf = await axios.get("sanctum/csrf-cookie");
       console.log("csrf", csrf);
       const res = await axios.post("api/login", this.user);
-      console.log(res);
+      console.log(res, "je suis avajt la condiotion");
       if (res.data.message == "erreur") {
+        console.log(res, "je suis dans l'erreur");
         this.show = "a";
-      } else if (res.data.message == "succes") {
+      } else if (res.data.message == "success") {
+        console.log(res, "je suis pas l'erreur");
         localStorage.setItem("authAcces", "acces");
         location.reload();
       }
@@ -133,6 +142,11 @@ const ConnexionComponent = {
     async forgetPassword() {
       const res = await axios.post("api/forget", { email: this.email });
       console.log(res);
+      if (res.data.message == "succes") {
+        this.showPassword = "a";
+      } else {
+        this.showPassword = "b";
+      }
     },
     modaleEmail() {
       this.email = "";

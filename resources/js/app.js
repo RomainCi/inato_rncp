@@ -6,7 +6,6 @@ import router from "./router";
 
 import App from "./App.vue";
 import store from "./store";
-import axios from "axios";
 import Select2 from "vue3-select2-component";
 
 createApp(App)

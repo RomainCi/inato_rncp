@@ -18,6 +18,10 @@ use App\Http\Controllers\InscriptionController;
 |
 */
 
+Route::get('/test', function () {
+    return view('email.verificationInscription');
+});
+
 Route::get('phpmyinfo', function () {
     phpinfo();
 })->name('phpmyinfo');

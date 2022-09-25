@@ -1,19 +1,19 @@
 <template>
-  <div>
-    <div class="modale-overlay" v-show="show" @click="show = false"></div>
+  <div class="modale-overlay" v-show="show" @click="show = false"></div>
+  <div :class="floutageCss" class="container">
+    <img class="logo" src="../../../public/images/logo.png" />
     <nav class="navbar">
-      <!-- <input type="hidden" :value="nombreNotif" /> -->
-
-      <router-link to="/projet">projet</router-link>
-      <router-link to="/notification"
-        ><i class="fa-solid fa-bell">{{ nbr }}</i></router-link
-      >
-      <div class="deconnexion">
-        <img src="../assets/image.jpg" @click="show = true" />
-        <ul v-show="show">
-          <li @click="deconnexion">deconnexion</li>
-          <li><router-link to="/edit">mon compte</router-link></li>
-        </ul>
+      <input type="hidden" :value="(floutageCss = floutage)" />
+      <router-link class="projet" to="/projet">PROJETS</router-link>
+      <div class="box">
+        <router-link class="notif" to="/notification">{{ nbr }}</router-link>
+        <div class="deconnexion">
+          <img src="../assets/photoProfil.png" @click="show = true" />
+          <ul v-show="show">
+            <li @click="deconnexion">DECONNEXION</li>
+            <li><router-link to="/edit">EDIT</router-link></li>
+          </ul>
+        </div>
       </div>
     </nav>
   </div>
@@ -25,11 +25,13 @@ import axios from "axios";
 export default {
   props: {
     watchNumber: Number,
+    floutage: String,
   },
   data() {
     return {
       show: false,
       nbr: "",
+      floutageCss: this.floutage,
     };
   },
   watch: {
@@ -61,6 +63,7 @@ export default {
       const res = await axios.post("api/users/deconnexion");
       console.log(res);
       if (res.status === 204) {
+        window.Echo.leave(`projet17`);
         localStorage.clear();
         this.$router.push("/");
       }
@@ -70,10 +73,27 @@ export default {
 </script>
 
 <style scoped>
-li {
-  z-index: 99;
-  position: relative;
+/* .mainContainer {
+  background: linear-gradient(
+    90deg,
+    rgba(13, 61, 174, 1) 35%,
+    rgba(15, 192, 180, 1) 100%
+  );
+} */
+.floutage {
+  filter: blur(8px);
 }
+a:link {
+  text-decoration: none;
+}
+
+.container {
+  display: flex;
+  margin-right: 5%;
+  margin-left: 5%;
+  margin-top: 40px;
+}
+
 .modale-overlay {
   position: absolute;
   top: 0;
@@ -81,12 +101,12 @@ li {
   right: 0;
   bottom: 0;
   z-index: 98;
+  cursor: pointer;
 }
 .deconnexion {
   height: 40px;
   width: 40px;
-  /* background-image: url("../assets/image.jpg");
-  background-size: cover; */
+  margin-right: 10px;
 }
 .deconnexion img {
   height: 100%;
@@ -94,6 +114,65 @@ li {
 }
 .navbar {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
+  background-color: white;
+  width: 100%;
+  border-radius: 10px;
+}
+.navbar img {
+  height: 40px;
+  width: 40px;
+  margin-left: 10px;
+}
+.navbar .box {
+  display: flex;
+}
+.navbar .projet {
+  font-family: "Lexend Mega", sans-serif;
+  color: black;
+  align-self: center;
+  margin-left: 20px;
+}
+.navbar .notif {
+  background-image: url("../assets/notif.png");
+  height: 100%;
+  width: 40px;
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 10px;
+  color: red;
+  font-family: "Lexend Mega", sans-serif;
+}
+.logo {
+  height: 40px;
+  width: 40px;
+  margin-right: 10px;
+}
+ul {
+  margin: 0px;
+}
+li {
+  z-index: 99;
+  position: relative;
+  right: 90px;
+  list-style: none;
+  margin: 0px;
+  font-family: "Lexend Mega", sans-serif;
+  color: white;
+  font-size: 0.6rem;
+  cursor: pointer;
+  padding-top: 8px;
+  top: -6px;
+}
+li:hover {
+  color: red;
+}
+li a:hover {
+  color: red;
+}
+li a {
+  color: white;
 }
 </style>

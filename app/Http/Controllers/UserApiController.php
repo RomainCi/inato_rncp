@@ -77,7 +77,7 @@ class UserApiController extends Controller
                 'prenom' => $request->prenom,
                 'token' => Str::random(55)
             ]);
-            dispatch(new VerificationEmailJob($userVerif['email'], $userVerif['token'], $userVerif['nom']))->delay(now()->addSeconds(3));
+            VerificationEmailJob::dispatch($userVerif['email'], $userVerif['token'], $userVerif['nom'])->delay(now()->addSeconds(3));
             dispatch(new DeleteEmailVerifJob($userVerif['id']))->delay(now()->addMinutes(5));
             return response()->json([
                 'succes' => 'succes',

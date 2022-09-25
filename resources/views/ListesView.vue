@@ -1,13 +1,19 @@
 <template>
   <div>
-    <Navbar></Navbar>
-
-    <h1>Hello</h1>
-    <listes
-      :listes="responseListes"
-      :role="responseRole"
-      v-on:changeRole="updateRole($event)"
-    ></listes>
+    <div class="mainContainer">
+      <div class="container">
+        <Navbar :floutage="floutage"></Navbar>
+        <div>
+          <listes
+            :listes="responseListes"
+            :role="responseRole"
+            :nomProjet="responseNom"
+            v-on:changeRole="updateRole($event)"
+            v-on:floutage="floutageAE($event)"
+          ></listes>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -26,6 +32,8 @@ export default {
     return {
       responseListes: "",
       responseRole: "",
+      responseNom: "",
+      floutage: "",
     };
   },
   beforeMount() {
@@ -47,11 +55,37 @@ export default {
       this.responseListes = res.data.listes;
       console.log(typeof this.responseListes);
       this.responseRole = res.data.role;
-      console.log(this.responseRole);
+      this.responseNom = res.data.listes[0].list_projet.nom;
+      console.log(this.responseRole, "response Role");
+    },
+    floutageAE(e) {
+      console.log("je suis le ", e);
+      this.floutage = e;
     },
   },
 };
 </script>
 
-<style>
+<style scoped>
+.floutage {
+  filter: blur(8px);
+}
+.mainContainer {
+  background: linear-gradient(
+    90deg,
+    rgba(13, 61, 174, 1) 35%,
+    rgba(15, 192, 180, 1) 100%
+  );
+  min-height: 98vh;
+  width: 100vw;
+  padding-top: 2vh;
+  display: flex;
+  justify-content: center;
+}
+.container {
+  min-height: 90vh;
+  width: 94vw;
+  background-color: #0d85bc;
+  border-radius: 30px;
+}
 </style>

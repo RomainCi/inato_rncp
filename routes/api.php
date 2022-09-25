@@ -40,6 +40,7 @@ Route::group(['prefix' => 'projet', 'middleware' => ['auth:sanctum']], function 
     Route::get('/{projetId}/admin', [ProjetController::class, 'showAdmin']);
     Route::get('/{id}', [ProjetController::class, 'show']);
     Route::get('/publicUrl/backgroundImage', [ProjetController::class, 'indexBackgroundImage']);
+    Route::post('quitter/{projetId}', [ProjetController::class, 'quitterProjet']);
 });
 
 Route::group(['prefix' => 'users', 'middleware' => ['auth:sanctum']], function () {

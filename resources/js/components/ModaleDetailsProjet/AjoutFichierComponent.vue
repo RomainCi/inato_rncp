@@ -2,18 +2,20 @@
   <!-- <div class="modal-overlay" v-show="!show" @click="show = false">
     <p>hadzad</p>
   </div> -->
-  <li @click="show = !show">Ajout fichier</li>
+  <li @click="show = !show">upload</li>
   <div class="modal" v-show="!show">
     <div class="close" @click="show = !show">&#x2715;</div>
-    <h2>Ajout de fichier</h2>
-    <input
-      type="file"
-      ref="fileuplaod"
-      @change="file"
-      accept="*"
-      class="input-file"
-    />
-    <button @click="envoieFichier">valider</button>
+    <p>ajout de fichier</p>
+    <div class="containerInput">
+      <input
+        type="file"
+        ref="fileuplaod"
+        @change="file"
+        accept="*"
+        class="input-file"
+      />
+      <button @click="envoieFichier">valider</button>
+    </div>
     <!-- <a :href="url" @click.prevent="downloadItem()">Download Text</a> -->
   </div>
 </template>
@@ -79,6 +81,29 @@ export default {
 </script>
 
 <style scoped>
+.close {
+  cursor: pointer;
+  width: 5%;
+}
+li {
+  cursor: pointer;
+  text-align: center;
+  font-family: "Lexend Mega", sans-serif;
+  font-size: 0.6em;
+  align-self: center;
+  border-radius: 6.25em;
+  padding: 0.5em;
+  background-color: #1ea3dc;
+  color: white;
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  /* margin-bottom: 8px; */
+}
+/* li:hover {
+  color: red;
+} */
 .modal-overlay {
   position: absolute;
   top: 0;
@@ -92,16 +117,47 @@ export default {
 }
 .modal {
   position: fixed;
-  top: 218%;
-  left: -60%;
+  top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
   z-index: 99;
-
-  width: 100%;
+  height: 120px;
+  width: 75vw;
   max-width: 400px;
   background-color: #fff;
   border-radius: 16px;
 
   padding: 25px;
+}
+p {
+  color: black;
+  font-size: 0.8rem;
+  font-family: "Lexend Mega", sans-serif;
+  text-transform: uppercase;
+  text-align: center;
+}
+.containerInput {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+.containerInput input {
+  color: black;
+  font-size: 0.7rem;
+  font-family: "Lexend Mega", sans-serif;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+button {
+  font-family: "Lexend Mega", sans-serif;
+  font-size: 0.7em;
+  align-self: center;
+  border-radius: 6.25em;
+  padding: 0.5em;
+  background-color: #1ea3dc;
+  color: white;
+  border: none;
+  cursor: pointer;
 }
 </style>
